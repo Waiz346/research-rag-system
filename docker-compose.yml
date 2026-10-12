@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: research_rag_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LLM_PROVIDER=mock
+      - CHROMA_PERSIST_DIRECTORY=/app/data/chroma_db
+    volumes:
+      - ./data:/app/data
+
+  frontend:
+    build: .
+    container_name: research_rag_ui
+    restart: unless-stopped
+    command: ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://api:8000
+    volumes:
+      - ./data:/app/data
