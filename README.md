@@ -2,7 +2,7 @@
 
 An enterprise-grade, academic-tailored Retrieval-Augmented Generation (RAG) platform and conversational research workbench—inspired by **NotebookLM** and **RAGFlow**. 
 
-Ingest peer-reviewed papers from ArXiv or upload local PDFs, perform section-aware chunking, retrieve with hybrid Dense + BM25 search and HyDE query expansion, chat across selected documents with dynamic multi-provider LLM switching, and benchmark answer reliability with the automated RAG Triad evaluation framework.
+Ingest peer-reviewed papers from ArXiv, local files, or Google Drive, perform section-aware chunking, retrieve with hybrid Dense + BM25 search and HyDE query expansion, chat across selected documents with dynamic multi-provider LLM switching, benchmark answer reliability with the automated RAG Triad evaluation framework, or compile into a standalone Windows desktop executable.
 
 ---
 
@@ -14,6 +14,23 @@ Ingest peer-reviewed papers from ArXiv or upload local PDFs, perform section-awa
   - **Active Source Scoping**: Use checkboxes to query single or multiple papers, or search across the entire library.
   - **Traceable Citations**: Expandable citation cards displaying canonical section badges (`🏷️ Methodology`, `🏷️ Abstract`), similarity scores, and verbatim excerpts.
   - **On-Demand Document Inspector**: Read full paper text, view section outlines, and manage sources without leaving the UI.
+
+- **📁 Google Drive Cloud Connector**:
+  - Connect and browse Google Drive folders, subfolders, and files directly within the Sources workspace.
+  - **5 Authentication Modes**:
+    1. *Interactive Demo Mode*: Pre-loaded with canonical papers (Transformer, LoRA, RAG, Self-RAG, DPR) for instant exploration without GCP setup.
+    2. *Service Account JSON*: Enterprise shared drive integration via service account key.
+    3. *OAuth 2.0 Access Token*: User-scoped Bearer token authentication.
+    4. *Google Cloud API Key*: Direct browsing of public/shared folders.
+    5. *Local `gdrive` CLI Bridge*: Seamless integration with an existing local CLI session.
+  - Visual breadcrumb navigation (`📁 My Drive / ...`) and direct folder ID/URL jumping.
+  - **1-Click RAG Ingestion**: Automatically downloads PDFs/Docs, extracts sections, and indexes into ChromaDB and BM25.
+
+- **🖥️ Standalone Windows Desktop App (`ResearchRAG.exe`)**:
+  - Fully compiled native Windows application using PyInstaller and Microsoft Edge WebView2 (`pywebview`).
+  - Launches with its own borderless window—no terminal windows, command lines, or browser address bars.
+  - Concurrently runs the FastAPI backend and Streamlit studio in background worker threads with automated port conflict resolution.
+  - Persistent data storage (`dist/ResearchRAG/data/`) located right beside the executable.
 
 - **⚡ Memory-Efficient Document Catalog (Manifest Projection Pattern)**:
   - Lightweight disk-backed metadata projection (`manifest.json` ~200B/doc) eliminates memory overhead when listing dozens or hundreds of papers.
@@ -59,6 +76,7 @@ flowchart TD
     subgraph INGESTION["📥 Document Ingestion & Storage"]
         A1["ArXiv API & Semantic Scholar"] --> B["Ingestion Engine"]
         A2["Custom Uploads (.pdf, .txt, .md)"] --> B
+        A3["Google Drive Connector (OAuth / SA / Demo)"] --> B
         B --> C["Academic Chunker (Paper Template)"]
         C -->|Strip References & Tag Sections| D["Chunk Collection"]
         D --> E[("ChromaDB (Dense Vectors)")]
@@ -89,6 +107,7 @@ flowchart TD
 
     subgraph CLIENT["💻 Client Layer"]
         UI["Streamlit Conversational Studio (NotebookLM UI)"] <--> FASTAPI["FastAPI REST Service (port 8000)"]
+        DESK["Standalone Desktop Shell (ResearchRAG.exe / Edge WebView2)"] <--> UI
         FASTAPI <--> RETRIEVAL
         FASTAPI <--> INGESTION
         FASTAPI <--> INFERENCE
@@ -134,7 +153,41 @@ flowchart LR
 
 ---
 
-### 3. Memory-Efficient Document Lifecycle & Inspector
+### 3. Google Drive Connector & Ingestion Flow
+
+```mermaid
+flowchart TD
+    subgraph GDRIVE["☁️ Google Drive"]
+        F1["📁 Folders & Subfolders"]
+        P1["📄 Research PDFs"]
+        D1["📝 Google Docs & Markdown"]
+    end
+
+    subgraph CONNECTOR["🔌 GoogleDriveConnector (src/ingestion/gdrive_connector.py)"]
+        AUTH{"Authentication Mode"}
+        AUTH -->|Enterprise| SA["Service Account JSON"]
+        AUTH -->|User Token| OA["OAuth 2.0 Access Token"]
+        AUTH -->|Public Links| AK["Google API Key"]
+        AUTH -->|Local Agent| CLI["gdrive CLI Bridge"]
+        AUTH -->|Instant Test| DEMO["Interactive Demo Mode"]
+    end
+
+    subgraph ACTIONS["🔄 Ingestion Actions"]
+        BROWSE["Folder Tree & Breadcrumbs Browser"]
+        DOWN["Binary & Doc Downloader (pypdf/export)"]
+        CHUNK["Academic Section-Aware Chunker"]
+        INDEX[("ChromaDB + BM25 + Manifest Index")]
+    end
+
+    GDRIVE <--> CONNECTOR
+    CONNECTOR --> BROWSE
+    BROWSE -->|User clicks 'Import into RAG'| DOWN
+    DOWN --> CHUNK --> INDEX
+```
+
+---
+
+### 4. Memory-Efficient Document Lifecycle & Inspector
 
 ```mermaid
 sequenceDiagram
@@ -147,13 +200,13 @@ sequenceDiagram
     participant Vec as ChromaDB & BM25
 
     Note over User, Vec: Ingestion Phase
-    User->>UI: Uploads paper.pdf (or queries ArXiv)
-    UI->>API: POST /documents/upload (or /ingest)
+    User->>UI: Uploads paper (or imports from Google Drive / ArXiv)
+    UI->>API: POST /documents/upload (or /gdrive/import, /ingest)
     API->>API: Section-aware chunking & reference pruning
     API->>Vec: Add embeddings & tokens
     API->>Disk: Save raw text to data/documents/{id}.txt
     API->>Cat: Append metadata to manifest.json (~200 bytes)
-    API-->>UI: Upload succeeded
+    API-->>UI: Ingestion succeeded
 
     Note over User, Vec: Memory-Efficient Browsing Phase
     User->>UI: Opens Sources Panel
@@ -234,7 +287,25 @@ ZHIPUAI_API_KEY=your_glm_api_key
 
 ---
 
-### Option B: Docker Compose
+### Option B: Standalone Desktop Application (`ResearchRAG.exe`)
+
+You can launch the system as a self-contained Windows desktop app with its own native window:
+
+1. **Direct Launch**:
+   - Navigate to `dist/ResearchRAG/`
+   - Double-click **`ResearchRAG.exe`** (or `Launch_Research_RAG.bat`)
+   - It boots both the backend API and Streamlit studio automatically and opens a native desktop window powered by Microsoft Edge WebView2.
+
+2. **Re-compiling the Executable**:
+   If you modify code and want to recompile the desktop application:
+   ```powershell
+   .\.venv\Scripts\python.exe build_exe.py
+   ```
+   This automates the PyInstaller compilation using `build_desktop.spec` and updates the standalone bundle inside `dist/ResearchRAG/`.
+
+---
+
+### Option C: Docker Compose
 
 Launch the full stack in isolated containers:
 ```bash
@@ -251,6 +322,7 @@ docker-compose up --build
    - Navigate to the **📚 Sources** column on the left.
    - **Upload Tab**: Drag and drop `.pdf`, `.txt`, or `.md` papers.
    - **ArXiv Tab**: Search for papers by keyword or citation network (e.g., papers citing `"2005.11401"`).
+   - **Google Drive Tab**: Connect via Service Account, OAuth token, API key, local `gdrive` CLI, or Demo mode. Browse folders and click **"📥 Import into RAG"** to ingest Drive papers directly.
 2. **Select Active Scope**:
    - Check or uncheck papers in the source list. 
    - Questions will be answered **strictly** using checked papers, or across the whole library if none are selected.
@@ -274,6 +346,10 @@ docker-compose up --build
 | `DELETE` | `/documents/{doc_id}` | Cascading deletion of a document from manifest, ChromaDB, and BM25 index |
 | `POST` | `/ingest` | Automated ArXiv fetch by citation seed, keywords, and minimum citations |
 | `POST` | `/query` | Multi-turn RAG query with source filtering (`doc_ids`), history, and dynamic LLM switcher |
+| `GET` | `/gdrive/status` | Check Google Drive connector status and active auth mode |
+| `POST` | `/gdrive/connect` | Authenticate Google Drive via Service Account, OAuth token, API key, gdrive CLI, or Demo |
+| `GET` | `/gdrive/browse` | Browse Google Drive folders and list subfolders/files with breadcrumbs |
+| `POST` | `/gdrive/import` | Download and index a Google Drive file directly into ChromaDB + BM25 |
 | `GET` | `/health` | Service health status, active index chunk count, and catalog count |
 
 ---
@@ -290,6 +366,7 @@ The test suite covers:
 - `test_hybrid_search.py`: BM25 tokenization, dense cosine search, and reciprocal rank fusion.
 - `test_arxiv_collector.py`: Citation enrichment and query parameter formatting.
 - `test_api.py`: Multipart file uploads, document catalog endpoints, lazy text inspection, multi-turn history handling, and source-scoped retrieval.
+- `test_gdrive.py`: Google Drive connector authentication modes, folder hierarchy browsing, file text extraction, and direct RAG indexing.
 
 ---
 
@@ -299,14 +376,15 @@ The test suite covers:
 research-rag-system/
 ├── src/
 │   ├── api/
-│   │   ├── main.py              # FastAPI endpoints, upload handler & catalog routing
+│   │   ├── main.py              # FastAPI endpoints, upload handler, GDrive & catalog routing
 │   │   └── schemas.py           # Pydantic v2 data models & request/response schemas
 │   ├── indexing/
 │   │   ├── document_catalog.py  # Manifest projection pattern & lazy text loader
 │   │   └── vector_store.py      # ChromaDB dense + BM25 sparse hybrid retrieval engine
 │   ├── ingestion/
 │   │   ├── arxiv_collector.py   # ArXiv search, Semantic Scholar citation enrichment
-│   │   └── chunker.py           # Academic paper template chunker & section normalizer
+│   │   ├── chunker.py           # Academic paper template chunker & section normalizer
+│   │   └── gdrive_connector.py  # Google Drive multi-mode auth, folder browsing & ingestion
 │   ├── rag/
 │   │   ├── generator.py         # Multi-provider LLM adapter (Gemini, OpenAI, Qwen, GLM, Ollama, Mock)
 │   │   └── pipeline.py          # HyDE expansion, candidate re-scoring, & history synthesis
@@ -315,11 +393,19 @@ research-rag-system/
 │   └── config.py                # Centralized environment settings
 ├── frontend/
 │   └── app.py                   # Streamlit NotebookLM-style two-column workbench
-├── tests/                       # Pytest unit & integration test suite
+├── tests/                       # Pytest unit & integration test suite (17 tests)
+│   ├── test_api.py
+│   ├── test_arxiv_collector.py
+│   ├── test_chunker.py
+│   ├── test_gdrive.py
+│   └── test_hybrid_search.py
 ├── data/
-│   ├── chroma/                  # Persistent ChromaDB vector files
+│   ├── chroma_db/               # Persistent ChromaDB vector files
 │   ├── documents/               # Disk-backed full text files (lazy loading)
 │   └── manifest.json            # Lightweight metadata manifest
+├── desktop_app.py               # Native desktop window runner (PyWebView + Edge WebView2)
+├── build_desktop.spec           # PyInstaller build specification
+├── build_exe.py                 # Automated compilation script for ResearchRAG.exe
 ├── Dockerfile                   # Container build definition
 ├── docker-compose.yml           # Multi-container orchestration
 ├── requirements.txt             # Pinned project dependencies

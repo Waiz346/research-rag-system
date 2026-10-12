@@ -96,5 +96,23 @@
     ],
     "created_at": "2026-10-12 14:01:31",
     "char_count": 0
+  },
+  "gdrive_Retrieval-Augmented_Generation_for_Knowledge-Intensive_Tasks__Lewis_et_al___1791787417": {
+    "doc_id": "gdrive_Retrieval-Augmented_Generation_for_Knowledge-Intensive_Tasks__Lewis_et_al___1791787417",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive Tasks",
+    "source_type": "gdrive",
+    "filename": "Retrieval-Augmented Generation for Knowledge-Intensive Tasks (Lewis et al.).pdf",
+    "authors": "Google Drive",
+    "citation_count": 0,
+    "chunk_count": 5,
+    "sections": [
+      "Abstract",
+      "Introduction",
+      "Methodology",
+      "Experiments",
+      "Conclusion"
+    ],
+    "created_at": "2026-10-12 14:43:38",
+    "char_count": 1120
   }
 }

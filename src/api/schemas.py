@@ -133,3 +133,54 @@ class LLMTestResponse(BaseModel):
     message: str
     sample_output: Optional[str] = None
     error: Optional[str] = None
+
+# ==============================================================================
+# Google Drive Connector Schemas
+# ==============================================================================
+
+class GDriveConnectRequest(BaseModel):
+    auth_type: str = Field(default="demo", description="demo, api_key, access_token, service_account, or gdrive_cli")
+    api_key: Optional[str] = Field(default=None, description="Google Cloud API Key")
+    access_token: Optional[str] = Field(default=None, description="OAuth 2.0 Bearer Access Token")
+    service_account_json: Optional[str] = Field(default=None, description="Service Account JSON string or file path")
+
+class GDriveStatusResponse(BaseModel):
+    connected: bool
+    auth_type: str
+    account_email: Optional[str] = None
+    message: str
+
+class GDriveItem(BaseModel):
+    id: str
+    name: str
+    mime_type: str
+    is_folder: bool
+    size: Optional[int] = None
+    modified_time: Optional[str] = None
+    web_view_link: Optional[str] = None
+    icon: Optional[str] = "📄"
+
+class GDriveBrowseResponse(BaseModel):
+    current_folder_id: str
+    current_folder_name: str
+    parent_id: Optional[str] = None
+    folders: List[GDriveItem] = []
+    files: List[GDriveItem] = []
+    total_items: int
+
+class GDriveImportRequest(BaseModel):
+    file_id: str
+    title: Optional[str] = Field(default=None, description="Optional override title")
+    section_aware: bool = Field(default=True, description="Enable academic section chunking")
+    exclude_references: bool = Field(default=True, description="Strip bibliography")
+
+class GDriveImportResponse(BaseModel):
+    status: str
+    doc_id: str
+    title: str
+    filename: str
+    chunks_indexed: int
+    total_in_index: int
+    sections: List[str]
+    char_count: int
+

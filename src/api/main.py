@@ -20,13 +20,16 @@ from src.indexing.document_catalog import DocumentCatalog
 from src.rag.pipeline import RAGPipeline
 from src.rag.generator import LLMGenerator
 from src.evals.evaluator import RAGEvaluator
+from src.ingestion.gdrive_connector import get_gdrive_connector
 from src.api.schemas import (
     IngestRequest, IngestResponse, PaperSummaryInfo,
     QueryRequest, QueryResponse, CitationSchema,
     DocumentSummarySchema, DocumentDetailSchema, UploadResponse,
     EvaluationReport, MetricDetail,
     HealthResponse,
-    LLMConfigUpdate, LLMConfigResponse, LLMTestResponse
+    LLMConfigUpdate, LLMConfigResponse, LLMTestResponse,
+    GDriveConnectRequest, GDriveStatusResponse, GDriveBrowseResponse,
+    GDriveImportRequest, GDriveImportResponse, GDriveItem
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -418,3 +421,124 @@ def reset_store():
         return {"status": "success", "message": "Vector store collection reset."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==============================================================================
+# Google Drive Connector Endpoints
+# ==============================================================================
+
+@app.get("/gdrive/status", response_model=GDriveStatusResponse, summary="Get Google Drive connector status")
+def gdrive_status():
+    """Check whether Google Drive connector is active and its current auth mode."""
+    conn = get_gdrive_connector()
+    status = conn.get_status()
+    return GDriveStatusResponse(
+        connected=status["connected"],
+        auth_type=status["auth_type"],
+        account_email=status.get("account_email"),
+        message=status["message"]
+    )
+
+@app.post("/gdrive/connect", response_model=GDriveStatusResponse, summary="Connect Google Drive with credentials")
+def gdrive_connect(req: GDriveConnectRequest):
+    """Authenticate Google Drive connector via Service Account, OAuth token, API key, gdrive CLI, or Demo mode."""
+    try:
+        conn = get_gdrive_connector()
+        res = conn.connect(
+            auth_type=req.auth_type,
+            api_key=req.api_key,
+            access_token=req.access_token,
+            service_account_json=req.service_account_json
+        )
+        return GDriveStatusResponse(
+            connected=True,
+            auth_type=conn.auth_type,
+            account_email=conn.account_email,
+            message=res.get("message", "Connected successfully.")
+        )
+    except Exception as e:
+        logger.error(f"Error connecting to Google Drive: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/gdrive/browse", response_model=GDriveBrowseResponse, summary="Browse Google Drive folder contents")
+def gdrive_browse(folder_id: str = "root"):
+    """List subfolders and files in a Google Drive folder."""
+    try:
+        conn = get_gdrive_connector()
+        data = conn.list_folder_contents(folder_id=folder_id)
+        return GDriveBrowseResponse(
+            current_folder_id=data["current_folder_id"],
+            current_folder_name=data["current_folder_name"],
+            parent_id=data.get("parent_id"),
+            folders=[GDriveItem(**f) for f in data.get("folders", [])],
+            files=[GDriveItem(**f) for f in data.get("files", [])],
+            total_items=data.get("total_items", 0)
+        )
+    except Exception as e:
+        logger.error(f"Error browsing Google Drive folder {folder_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/gdrive/import", response_model=GDriveImportResponse, summary="Import and index a file from Google Drive")
+def gdrive_import(req: GDriveImportRequest):
+    """Download a file from Google Drive, perform section chunking, and index into ChromaDB + BM25."""
+    try:
+        conn = get_gdrive_connector()
+        filename, text_content, mime_type = conn.download_file_content(req.file_id)
+
+        if not text_content.strip():
+            raise HTTPException(status_code=400, detail=f"File {filename} is empty or contains no extractable text.")
+
+        raw_stem = Path(filename).stem
+        clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
+        doc_id = f"gdrive_{clean_stem}_{int(time.time())}"
+        title = req.title or raw_stem.replace("_", " ").title()
+
+        chunker = DocumentChunker()
+        base_meta = {
+            "doc_id": doc_id,
+            "title": title,
+            "authors": "Google Drive",
+            "published": datetime.now().strftime("%Y-%m-%d"),
+            "pdf_url": "",
+            "citation_count": 0,
+            "source_type": "gdrive"
+        }
+
+        chunks = chunker.split_text(
+            text_content,
+            base_metadata=base_meta,
+            section_aware=req.section_aware,
+            exclude_references=req.exclude_references
+        )
+        store = get_vector_store()
+        indexed_count = store.add_chunks(chunks)
+
+        catalog = get_document_catalog()
+        sections = [c.section for c in chunks]
+        catalog.register_document(
+            doc_id=doc_id,
+            title=title,
+            full_text=text_content,
+            source_type="gdrive",
+            filename=filename,
+            authors="Google Drive",
+            citation_count=0,
+            chunk_count=len(chunks),
+            sections=sections
+        )
+
+        return GDriveImportResponse(
+            status="success",
+            doc_id=doc_id,
+            title=title,
+            filename=filename,
+            chunks_indexed=indexed_count,
+            total_in_index=store.count(),
+            sections=list(dict.fromkeys(sections)),
+            char_count=len(text_content)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error importing Google Drive file {req.file_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+

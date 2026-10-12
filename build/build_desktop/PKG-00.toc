@@ -1,0 +1,67 @@
+('C:\\Users\\WAI YAN '
+ 'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\ResearchRAG.pkg',
+ {'BINARY': True,
+  'DATA': True,
+  'EXECUTABLE': True,
+  'EXTENSION': True,
+  'PYMODULE': True,
+  'PYSOURCE': True,
+  'PYZ': False,
+  'SPLASH': True,
+  'SYMLINK': False},
+ [('pyi-contents-directory _internal', '', 'OPTION'),
+  ('PYZ-00.pyz',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\PYZ-00.pyz',
+   'PYZ'),
+  ('struct',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\localpycs\\struct.pyc',
+   'PYMODULE'),
+  ('pyimod01_archive',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\localpycs\\pyimod01_archive.pyc',
+   'PYMODULE'),
+  ('pyimod02_importers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\localpycs\\pyimod02_importers.pyc',
+   'PYMODULE'),
+  ('pyimod03_ctypes',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\localpycs\\pyimod03_ctypes.pyc',
+   'PYMODULE'),
+  ('pyimod04_pywin32',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\build\\build_desktop\\localpycs\\pyimod04_pywin32.pyc',
+   'PYMODULE'),
+  ('pyiboot01_bootstrap',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\PyInstaller\\loader\\pyiboot01_bootstrap.py',
+   'PYSOURCE'),
+  ('pyi_rth_pkgutil',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_pkgutil.py',
+   'PYSOURCE'),
+  ('pyi_rth_multiprocessing',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_multiprocessing.py',
+   'PYSOURCE'),
+  ('pyi_rth_inspect',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_inspect.py',
+   'PYSOURCE'),
+  ('pyi_rth_setuptools',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_setuptools.py',
+   'PYSOURCE'),
+  ('desktop_app',
+   'C:\\Users\\WAI YAN CHING\\Desktop\\research-rag-system\\desktop_app.py',
+   'PYSOURCE')],
+ 'python313.dll',
+ True,
+ False,
+ False,
+ [],
+ None,
+ None,
+ None)

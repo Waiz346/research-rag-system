@@ -7,10 +7,11 @@ Features:
 - Conversational Studio: Multi-turn chat with source filtering and traceable section citations.
 - Dynamic Model Switcher: Hot-swap between Qwen, GLM, Gemini, OpenAI, Ollama, and Mock.
 """
-import streamlit as st
+import os
 import requests
+import streamlit as st
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(
     page_title="Research RAG Studio",
@@ -25,6 +26,10 @@ if "inspect_doc_id" not in st.session_state:
     st.session_state.inspect_doc_id = None
 if "selected_doc_ids" not in st.session_state:
     st.session_state.selected_doc_ids = []
+if "gdrive_folder_id" not in st.session_state:
+    st.session_state.gdrive_folder_id = "root"
+if "gdrive_folder_path" not in st.session_state:
+    st.session_state.gdrive_folder_path = [("root", "My Drive")]
 
 # Top Header
 st.title("📓 Research RAG Studio")
@@ -210,7 +215,7 @@ with col_sources:
     st.subheader("📚 Sources")
 
     # Add Sources Tabs
-    tab_upload, tab_arxiv = st.tabs(["📤 Upload Files", "🌐 Fetch ArXiv"])
+    tab_upload, tab_arxiv, tab_gdrive = st.tabs(["📤 Upload Files", "🌐 Fetch ArXiv", "📁 Google Drive"])
 
     with tab_upload:
         uploaded_file = st.file_uploader(
@@ -267,6 +272,143 @@ with col_sources:
                         st.error(f"Ingestion error: {res.text}")
                 except Exception as e:
                     st.error(f"Failed to ingest: {e}")
+
+    with tab_gdrive:
+        # Check connector status
+        try:
+            gd_stat_res = requests.get(f"{API_URL}/gdrive/status", timeout=5)
+            gd_status = gd_stat_res.json() if gd_stat_res.status_code == 200 else {"connected": False, "auth_type": "none", "message": "Unknown"}
+        except Exception:
+            gd_status = {"connected": False, "auth_type": "none", "message": "Backend offline"}
+
+        auth_badge = "🟢" if gd_status.get("connected") else "⚪"
+        st.markdown(f"**Drive Status:** {auth_badge} `{gd_status.get('message', 'Disconnected')}`")
+
+        with st.expander("🔑 Authentication & Connection Settings"):
+            auth_choice = st.radio(
+                "Connector Auth Mode",
+                ["Interactive Demo Mode", "Service Account JSON", "OAuth Access Token", "Google API Key", "Local gdrive CLI"],
+                index=0 if gd_status.get("auth_type") == "demo" else 1
+            )
+            connect_payload = {"auth_type": "demo"}
+            if auth_choice == "Interactive Demo Mode":
+                connect_payload = {"auth_type": "demo"}
+                st.caption("Pre-loaded with canonical foundational papers (Transformer, LoRA, RAG, Self-RAG, DPR).")
+            elif auth_choice == "Service Account JSON":
+                sa_input = st.text_area("Paste Service Account JSON", placeholder='{"type": "service_account", "project_id": ...}')
+                connect_payload = {"auth_type": "service_account", "service_account_json": sa_input}
+            elif auth_choice == "OAuth Access Token":
+                token_input = st.text_input("OAuth 2.0 Bearer Token (ya29...)", type="password")
+                connect_payload = {"auth_type": "access_token", "access_token": token_input}
+            elif auth_choice == "Google API Key":
+                key_input = st.text_input("Google API Key (for public folders)", type="password")
+                connect_payload = {"auth_type": "api_key", "api_key": key_input}
+            elif auth_choice == "Local gdrive CLI":
+                st.caption("Uses the local CLI session authenticated via `gdrive auth login`.")
+                connect_payload = {"auth_type": "gdrive_cli"}
+
+            if st.button("🔗 Connect to Google Drive", use_container_width=True):
+                try:
+                    c_res = requests.post(f"{API_URL}/gdrive/connect", json=connect_payload, timeout=15)
+                    if c_res.status_code == 200:
+                        st.success(f"Connected: {c_res.json().get('message')}")
+                        st.session_state.gdrive_folder_id = "root"
+                        st.session_state.gdrive_folder_path = [("root", "My Drive")]
+                        st.rerun()
+                    else:
+                        st.error(f"Connection failed: {c_res.text}")
+                except Exception as e:
+                    st.error(f"Error connecting: {e}")
+
+        # Direct folder ID jump
+        c_nav1, c_nav2 = st.columns([3, 1])
+        with c_nav1:
+            jump_input = st.text_input("Folder ID / URL", placeholder="Folder ID or drive.google.com/...", label_visibility="collapsed")
+        with c_nav2:
+            if st.button("Go", use_container_width=True):
+                target_id = jump_input.strip()
+                if "/folders/" in target_id:
+                    target_id = target_id.split("/folders/")[1].split("?")[0].split("/")[0]
+                if target_id:
+                    st.session_state.gdrive_folder_id = target_id
+                    st.session_state.gdrive_folder_path = [(target_id, f"Folder {target_id[:8]}...")]
+                    st.rerun()
+
+        # Breadcrumbs navigation
+        path_str = " / ".join([name for _, name in st.session_state.gdrive_folder_path])
+        st.markdown(f"**Path:** 📁 `{path_str}`")
+
+        c_up, c_refresh = st.columns([1, 1])
+        with c_up:
+            if len(st.session_state.gdrive_folder_path) > 1:
+                if st.button("⬆️ Up One Folder", use_container_width=True):
+                    st.session_state.gdrive_folder_path.pop()
+                    st.session_state.gdrive_folder_id = st.session_state.gdrive_folder_path[-1][0]
+                    st.rerun()
+        with c_refresh:
+            if st.button("🔄 Refresh Folder", use_container_width=True):
+                st.rerun()
+
+        # Fetch contents of current folder
+        try:
+            curr_fid = st.session_state.gdrive_folder_id
+            b_res = requests.get(f"{API_URL}/gdrive/browse?folder_id={curr_fid}", timeout=10)
+            if b_res.status_code == 200:
+                b_data = b_res.json()
+                folders = b_data.get("folders", [])
+                files = b_data.get("files", [])
+
+                if not folders and not files:
+                    st.info("📂 This folder is empty.")
+
+                # Subfolders listing
+                if folders:
+                    st.markdown("**Subfolders:**")
+                    for f in folders:
+                        f_col1, f_col2 = st.columns([3, 1])
+                        with f_col1:
+                            st.write(f"📁 **{f['name']}**")
+                        with f_col2:
+                            if st.button("Open", key=f"open_{f['id']}", use_container_width=True):
+                                st.session_state.gdrive_folder_id = f["id"]
+                                st.session_state.gdrive_folder_path.append((f["id"], f["name"]))
+                                st.rerun()
+
+                # Files listing
+                if files:
+                    st.markdown("**Files:**")
+                    for file_item in files:
+                        with st.container(border=True):
+                            icon = file_item.get("icon", "📄")
+                            size_str = f" • {file_item['size'] / 1024:.1f} KB" if file_item.get("size") else ""
+                            st.write(f"{icon} **{file_item['name']}**{size_str}")
+
+                            fc1, fc2 = st.columns([1.5, 1])
+                            with fc1:
+                                if st.button("📥 Import into RAG", key=f"import_{file_item['id']}", use_container_width=True, type="primary"):
+                                    with st.spinner(f"Downloading and indexing '{file_item['name']}'..."):
+                                        try:
+                                            imp_payload = {
+                                                "file_id": file_item["id"],
+                                                "title": file_item["name"].rsplit(".", 1)[0],
+                                                "section_aware": True
+                                            }
+                                            imp_res = requests.post(f"{API_URL}/gdrive/import", json=imp_payload, timeout=60)
+                                            if imp_res.status_code == 200:
+                                                res_data = imp_res.json()
+                                                st.success(f"Indexed **{res_data['title']}** ({res_data['chunks_indexed']} chunks)!")
+                                                st.rerun()
+                                            else:
+                                                st.error(f"Import failed: {imp_res.text}")
+                                        except Exception as ex:
+                                            st.error(f"Error importing file: {ex}")
+                            with fc2:
+                                if file_item.get("web_view_link"):
+                                    st.link_button("🔗 Drive Link", file_item["web_view_link"], use_container_width=True)
+            else:
+                st.error(f"Could not browse folder: {b_res.text}")
+        except Exception as e:
+            st.error(f"Failed to fetch Google Drive contents: {e}")
 
     st.markdown("---")
 

@@ -1,9 +1,15 @@
 """Application configuration settings."""
+import sys
 import os
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False):
+    BUNDLE_DIR = Path(sys._MEIPASS)
+    BASE_DIR = Path(sys.executable).parent
+else:
+    BUNDLE_DIR = Path(__file__).resolve().parent.parent
+    BASE_DIR = BUNDLE_DIR
 
 class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
