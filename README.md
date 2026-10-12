@@ -1,10 +1,10 @@
-# 🔬 Research RAG Intelligence System
+# Research RAG Intelligence System
 
 An end-to-end GenAI & Machine Learning integration system that ingests scientific literature from ArXiv, constructs a persistent semantic vector index, performs citation-grounded retrieval, serves inference via a FastAPI REST service, and benchmarks quality using the automated RAG Triad evaluation framework.
 
 ---
 
-## 🌟 Key Highlights & Engineering Features
+## Features
 
 - **Automated Data Ingestion**: Programmatic ArXiv scraper fetching research metadata, abstracts, and optional PDF text extraction.
 - **Configurable Document Chunking**: Sliding-window chunker with dynamic boundary snapping, configurable overlaps, and complete provenance/metadata retention.
@@ -70,7 +70,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configuration
-A default `.env` file is included with `LLM_PROVIDER=mock`, allowing you to test immediately without API keys!
+A default `.env` file is included with `LLM_PROVIDER=mock`, allowing test without API key
 
 If you want to use OpenAI or Gemini:
 1. Open `.env`
@@ -79,9 +79,9 @@ If you want to use OpenAI or Gemini:
 
 ---
 
-## 🖥️ Running the System
+## Running the System
 
-### Option A: Local Run (Fastest)
+### Option A: Local Run 
 
 **Step 1: Start the FastAPI Backend**
 ```powershell
@@ -135,12 +135,3 @@ research-rag-system/
 ├── STEP_BY_STEP_GUIDE.md# Educational deep-dive roadmap
 └── README.md            # Project documentation
 ```
-
----
-
-## 💼 How to Talk About This in Data Science Interviews
-
-When discussing this project with recruiters and engineering managers, highlight the system design decisions:
-1. **Explain the trade-offs in chunking**: Why did you choose sliding-window chunking over fixed token counts? (Preserves phrase semantics and minimizes mid-sentence splits).
-2. **Explain hallucination mitigation**: How do citations and strict prompt boundaries prevent the model from answering out-of-domain queries?
-3. **Explain automated evaluations**: How do you measure model performance without human ground truth labels on every run? (RAG Triad metrics).
