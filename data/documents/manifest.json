@@ -1,0 +1,100 @@
+{
+  "1": {
+    "doc_id": "1",
+    "title": "test",
+    "source_type": "arxiv",
+    "filename": "1.txt",
+    "authors": "Unknown",
+    "citation_count": 0,
+    "chunk_count": 1,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "2506.06962v3": {
+    "doc_id": "2506.06962v3",
+    "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
+    "source_type": "arxiv",
+    "filename": "2506.06962v3.txt",
+    "authors": "Jingyuan Qi, Zhiyang Xu, Qifan Wang, Lifu Huang",
+    "citation_count": 0,
+    "chunk_count": 3,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "2504.13684v1": {
+    "doc_id": "2504.13684v1",
+    "title": "Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation",
+    "source_type": "arxiv",
+    "filename": "2504.13684v1.txt",
+    "authors": " Xiangrong,  Zhu, Yuan Xu, Tianjian Liu, Jingwei Sun, Yu Zhang, Xin Tong",
+    "citation_count": 2,
+    "chunk_count": 2,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "2504.17204v1": {
+    "doc_id": "2504.17204v1",
+    "title": "Factually: Exploring Wearable Fact-Checking for Augmented Truth Discernment",
+    "source_type": "arxiv",
+    "filename": "2504.17204v1.txt",
+    "authors": "Chitralekha Gupta, Hanjun Wu, Praveen Sasikumar, Shreyas Sridhar, Priambudi Bagaskara, Suranga Nanayakkara",
+    "citation_count": 0,
+    "chunk_count": 3,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "2309.15217v2": {
+    "doc_id": "2309.15217v2",
+    "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+    "source_type": "arxiv",
+    "filename": "2309.15217v2.txt",
+    "authors": "Shahul Es, Jithin James, Luis Espinosa-Anke, Steven Schockaert",
+    "citation_count": 1160,
+    "chunk_count": 2,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "026352aeba69": {
+    "doc_id": "026352aeba69",
+    "title": "STPAgent: A Writer-Reviewer multi-agent architecture for AI-assisted Unsafe Control Action identification",
+    "source_type": "arxiv",
+    "filename": "026352aeba69.txt",
+    "authors": "Dimitrije Stojanovi\u0107, Bogdan Pavkovi\u0107, Nenad \u010ceti\u0107",
+    "citation_count": 0,
+    "chunk_count": 1,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  },
+  "e9a82d33ce0f": {
+    "doc_id": "e9a82d33ce0f",
+    "title": "Knowledge-guided retrieval-augmented generation for semantic interaction tasks in data-scarce industrial vertical fields",
+    "source_type": "arxiv",
+    "filename": "e9a82d33ce0f.txt",
+    "authors": "Ying Hou, Kai-Ji Hou, Yong-Ping Du, Hong-Gui Han",
+    "citation_count": 0,
+    "chunk_count": 1,
+    "sections": [
+      "General"
+    ],
+    "created_at": "2026-10-12 14:01:31",
+    "char_count": 0
+  }
+}
