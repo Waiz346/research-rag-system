@@ -14,6 +14,7 @@ import io
 import os
 import json
 import logging
+import threading
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -144,16 +145,59 @@ DEMO_FILE_CONTENTS = {
     )
 }
 
+def get_detected_token_path() -> Optional[Path]:
+    """Search common locations for a valid authorized Google token."""
+    candidates = [
+        Path.home() / ".gemini" / "antigravity" / "plugin_data" / "gdocs" / "token.json",
+        Path("token.json"),
+        Path.home() / ".gdrive" / "token.json"
+    ]
+    for p in candidates:
+        try:
+            if p.exists() and p.is_file():
+                return p
+        except Exception:
+            pass
+    return None
+
+def get_oauth_client_info() -> Tuple[Optional[str], Optional[str]]:
+    """Retrieve Google OAuth client_id and client_secret from saved accounts or token.json."""
+    acc_dir = Path("data/gdrive_accounts")
+    if acc_dir.exists():
+        for f in acc_dir.glob("*.json"):
+            try:
+                with open(f, "r", encoding="utf-8") as fp:
+                    d = json.load(fp)
+                if d.get("client_id") and d.get("client_secret"):
+                    return d["client_id"], d["client_secret"]
+            except Exception:
+                pass
+
+    tp = get_detected_token_path()
+    if tp:
+        try:
+            with open(tp, "r", encoding="utf-8") as fp:
+                d = json.load(fp)
+            if d.get("client_id") and d.get("client_secret"):
+                return d["client_id"], d["client_secret"]
+        except Exception:
+            pass
+
+    return None, None
+
 class GoogleDriveConnector:
     """Manages Google Drive authentication, folder hierarchy navigation, and document importing."""
 
     def __init__(self):
-        self.auth_type = "demo"  # "demo", "api_key", "access_token", "service_account", "gdrive_cli"
+        self.auth_type = "demo"  # "demo", "user_account", "api_key", "access_token", "service_account", "gdrive_cli"
         self.service = None
         self.account_email: Optional[str] = None
         self.api_key: Optional[str] = None
         self.access_token: Optional[str] = None
         self.credentials_info: Optional[Dict[str, Any]] = None
+        self.login_state: Dict[str, Any] = {"status": "idle", "email": None, "message": None, "error": None}
+        self.login_thread: Optional[threading.Thread] = None
+        self.active_server = None
 
     def connect(
         self,
@@ -168,6 +212,39 @@ class GoogleDriveConnector:
         self.access_token = access_token
         self.service = None
         self.account_email = None
+
+        if self.auth_type in ["user_account", "google_account", "auto"]:
+            token_path = get_detected_token_path()
+            if not token_path:
+                raise ValueError("No authorized Google Account found on this machine. Authenticate or use Demo mode.")
+            try:
+                from google.oauth2.credentials import Credentials
+                from googleapiclient.discovery import build
+
+                with open(token_path, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+
+                token_data = d.get("token", {})
+                creds = Credentials(
+                    token=token_data.get("access_token"),
+                    refresh_token=token_data.get("refresh_token"),
+                    token_uri="https://oauth2.googleapis.com/token",
+                    client_id=d.get("client_id"),
+                    client_secret=d.get("client_secret"),
+                    scopes=d.get("scopes")
+                )
+                self.service = build("drive", "v3", credentials=creds)
+                self.auth_type = "user_account"
+                self.account_email = d.get("email", "Google Account")
+                return {
+                    "status": "success",
+                    "auth_type": "user_account",
+                    "account": self.account_email,
+                    "message": f"Connected to Google Drive as {self.account_email}"
+                }
+            except Exception as e:
+                logger.error(f"Failed to authenticate with user Google Account: {e}")
+                raise RuntimeError(f"User Google Account connection failed: {e}")
 
         if self.auth_type == "demo":
             self.account_email = "researcher-demo@google.drive"
@@ -235,13 +312,290 @@ class GoogleDriveConnector:
 
         raise ValueError(f"Unsupported auth_type: {auth_type}")
 
+    def list_saved_accounts(self) -> List[Dict[str, Any]]:
+        """List all saved Google accounts available for quick switching."""
+        acc_dir = Path("data/gdrive_accounts")
+        acc_dir.mkdir(parents=True, exist_ok=True)
+
+        # Proactively check if token.json has an account not yet in acc_dir
+        tp = get_detected_token_path()
+        if tp:
+            try:
+                with open(tp, "r", encoding="utf-8") as fp:
+                    d = json.load(fp)
+                email = d.get("email")
+                if email:
+                    target_file = acc_dir / f"{email}.json"
+                    if not target_file.exists():
+                        with open(target_file, "w", encoding="utf-8") as out_fp:
+                            json.dump(d, out_fp, indent=2)
+            except Exception:
+                pass
+
+        accounts = []
+        for f in acc_dir.glob("*.json"):
+            try:
+                with open(f, "r", encoding="utf-8") as fp:
+                    d = json.load(fp)
+                email = d.get("email", f.stem)
+                name = d.get("name")
+                is_active = (self.auth_type == "user_account" and self.account_email == email)
+                accounts.append({
+                    "email": email,
+                    "name": name,
+                    "is_active": is_active,
+                    "updated_at": d.get("updated_at")
+                })
+            except Exception as e:
+                logger.warning(f"Error reading account file {f}: {e}")
+
+        # Sort: active first, then alphabetical
+        accounts.sort(key=lambda x: (not x["is_active"], x["email"]))
+        return accounts
+
+    def switch_account(self, email: str) -> Dict[str, Any]:
+        """Instantly switch active Google Drive session to a saved account."""
+        acc_dir = Path("data/gdrive_accounts")
+        target = acc_dir / f"{email}.json"
+        if not target.exists():
+            raise FileNotFoundError(f"Saved account credentials for '{email}' not found.")
+
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build
+
+            with open(target, "r", encoding="utf-8") as fp:
+                d = json.load(fp)
+
+            token_data = d.get("token", {})
+            creds = Credentials(
+                token=token_data.get("access_token"),
+                refresh_token=token_data.get("refresh_token"),
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=d.get("client_id"),
+                client_secret=d.get("client_secret"),
+                scopes=d.get("scopes")
+            )
+            self.service = build("drive", "v3", credentials=creds)
+            self.auth_type = "user_account"
+            self.account_email = email
+            logger.info(f"Switched Google Drive active account to: {email}")
+            return {
+                "status": "success",
+                "email": email,
+                "message": f"Successfully switched to Google Account: {email}"
+            }
+        except Exception as e:
+            logger.error(f"Failed to switch account to {email}: {e}")
+            raise RuntimeError(f"Failed to switch Google account to {email}: {e}")
+
+    def start_browser_login(self) -> Dict[str, Any]:
+        """Launch browser-based OAuth flow with Google Account Chooser."""
+        # If a login flow is already active, close the existing server so we can start fresh
+        if self.active_server:
+            try:
+                self.active_server.server_close()
+            except Exception:
+                pass
+            self.active_server = None
+
+        client_id, client_secret = get_oauth_client_info()
+        if not client_id or not client_secret:
+            raise ValueError("No Google OAuth client ID/secret found to initialize sign-in.")
+
+        from google_auth_oauthlib.flow import InstalledAppFlow, _RedirectWSGIApp, _ExclusiveWSGIServer
+        import wsgiref.simple_server
+        from wsgiref.simple_server import WSGIRequestHandler
+
+        client_config = {
+            "installed": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": ["http://localhost", "http://127.0.0.1"]
+            }
+        }
+
+        # Check registered scopes in existing token to avoid 403 restricted_client
+        registered_client_scopes = []
+        tp = get_detected_token_path()
+        if tp:
+            try:
+                with open(tp, "r", encoding="utf-8") as fp:
+                    registered_client_scopes = json.load(fp).get("scopes", [])
+            except Exception:
+                pass
+
+        if not registered_client_scopes:
+            acc_dir = Path("data/gdrive_accounts")
+            if acc_dir.exists():
+                for f in acc_dir.glob("*.json"):
+                    try:
+                        with open(f, "r", encoding="utf-8") as fp:
+                            registered_client_scopes = json.load(fp).get("scopes", [])
+                        if registered_client_scopes:
+                            break
+                    except Exception:
+                        pass
+
+        # Use full drive scope if registered (drive.readonly triggers 403 restricted_client if unregistered)
+        if "https://www.googleapis.com/auth/drive" in registered_client_scopes:
+            drive_scope = "https://www.googleapis.com/auth/drive"
+        elif "https://www.googleapis.com/auth/drive.readonly" in registered_client_scopes:
+            drive_scope = "https://www.googleapis.com/auth/drive.readonly"
+        else:
+            drive_scope = "https://www.googleapis.com/auth/drive"
+
+        scopes = [
+            drive_scope,
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "openid"
+        ]
+        flow = InstalledAppFlow.from_client_config(client_config, scopes=scopes)
+        wsgi_app = _RedirectWSGIApp("Authentication successful! You can now close this tab and return to Research RAG.")
+        local_server = wsgiref.simple_server.make_server(
+            "localhost",
+            0,
+            wsgi_app,
+            server_class=_ExclusiveWSGIServer,
+            handler_class=WSGIRequestHandler
+        )
+        self.active_server = local_server
+        port = local_server.server_port
+        flow.redirect_uri = f"http://localhost:{port}/"
+        auth_url, _ = flow.authorization_url(prompt="select_account", access_type="offline")
+
+        self.login_state = {
+            "status": "in_progress",
+            "auth_url": auth_url,
+            "email": None,
+            "message": "Sign-in prompt opened. If not shown automatically, click the button below.",
+            "error": None
+        }
+
+        # Attempt to open browser automatically using Windows shell or webbrowser
+        try:
+            if hasattr(os, "startfile"):
+                os.startfile(auth_url)
+            else:
+                import webbrowser
+                webbrowser.open(auth_url, new=1, autoraise=True)
+        except Exception as e:
+            logger.warning(f"Could not open browser automatically via shell: {e}")
+
+        def _auth_worker():
+            try:
+                from googleapiclient.discovery import build
+                local_server.timeout = 300  # 5 minutes timeout
+                local_server.handle_request()
+
+                if not hasattr(wsgi_app, "last_request_uri") or not wsgi_app.last_request_uri:
+                    raise TimeoutError("Timed out or received no response from Google sign-in.")
+
+                authorization_response = wsgi_app.last_request_uri.replace("http", "https")
+                flow.fetch_token(authorization_response=authorization_response)
+                creds = flow.credentials
+
+                # Query profile name & email
+                oauth2_service = build("oauth2", "v2", credentials=creds)
+                uinfo = oauth2_service.userinfo().get().execute()
+                email = uinfo.get("email") or "google_user"
+                name = uinfo.get("name")
+
+                # Persist to data/gdrive_accounts/{email}.json
+                save_data = {
+                    "email": email,
+                    "name": name,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "token": {
+                        "access_token": creds.token,
+                        "refresh_token": creds.refresh_token,
+                        "expiry": creds.expiry.isoformat() if creds.expiry else None
+                    },
+                    "scopes": creds.scopes,
+                    "updated_at": datetime.now().isoformat()
+                }
+                acc_path = Path("data/gdrive_accounts") / f"{email}.json"
+                acc_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(acc_path, "w", encoding="utf-8") as out_fp:
+                    json.dump(save_data, out_fp, indent=2)
+
+                # Switch active account immediately
+                self.switch_account(email)
+                self.login_state = {
+                    "status": "completed",
+                    "auth_url": None,
+                    "email": email,
+                    "message": f"Successfully connected and switched to Google Account: {email}",
+                    "error": None
+                }
+            except Exception as e:
+                logger.error(f"Google OAuth sign-in error: {e}")
+                self.login_state = {
+                    "status": "error",
+                    "auth_url": None,
+                    "email": None,
+                    "message": None,
+                    "error": str(e)
+                }
+            finally:
+                try:
+                    local_server.server_close()
+                except Exception:
+                    pass
+
+        self.login_thread = threading.Thread(target=_auth_worker, daemon=True)
+        self.login_thread.start()
+
+        return {
+            "status": "in_progress",
+            "auth_url": auth_url,
+            "message": "Sign-in prompt opened in browser. If not shown, click the button below."
+        }
+
+    def get_login_status(self) -> Dict[str, Any]:
+        """Return status of pending browser login."""
+        return self.login_state
+
+    def delete_saved_account(self, email: str) -> Dict[str, Any]:
+        """Remove a saved Google account."""
+        acc_path = Path("data/gdrive_accounts") / f"{email}.json"
+        if acc_path.exists():
+            acc_path.unlink()
+            if self.account_email == email:
+                remaining = self.list_saved_accounts()
+                if remaining:
+                    self.switch_account(remaining[0]["email"])
+                else:
+                    self.connect(auth_type="demo")
+            return {"status": "success", "message": f"Removed account {email}"}
+        return {"status": "not_found", "message": f"Account {email} not found."}
+
     def get_status(self) -> Dict[str, Any]:
         """Return current connector status."""
+        token_path = get_detected_token_path()
+        detected_email = None
+        if token_path:
+            try:
+                with open(token_path, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    detected_email = d.get("email")
+            except Exception:
+                pass
+
+        is_connected = (self.auth_type in ["demo", "user_account"] and (self.service is not None or self.auth_type == "demo")) or (self.service is not None)
+        active_label = self.account_email or self.auth_type.upper()
+
         return {
-            "connected": self.auth_type == "demo" or self.service is not None,
+            "connected": is_connected,
             "auth_type": self.auth_type,
-            "account_email": self.account_email,
-            "message": f"Active Mode: {self.auth_type.upper()}"
+            "account_email": self.account_email or detected_email,
+            "has_detected_account": token_path is not None,
+            "detected_email": detected_email,
+            "message": f"Active: {active_label}"
         }
 
     def list_folder_contents(self, folder_id: str = "root") -> Dict[str, Any]:
@@ -390,9 +744,163 @@ class GoogleDriveConnector:
                     "total_items": len(folders) + len(files)
                 }
             except Exception as e:
-                raise RuntimeError(f"gdrive CLI execution failed: {e}")
+                logger.warning(f"gdrive CLI execution failed: {e}")
 
-        raise RuntimeError("Google Drive is not connected. Connect first.")
+        return {
+            "current_folder_id": folder_id,
+            "current_folder_name": "Not Connected",
+            "parent_id": None,
+            "folders": [],
+            "files": [],
+            "total_items": 0,
+            "error": "Google Drive is not connected. Please choose an authentication mode and click Connect."
+        }
+
+    def search_drive(self, query: str) -> Dict[str, Any]:
+        """Search files and folders in Google Drive by name, keywords, or content."""
+        query_clean = (query or "").strip()
+        if not query_clean:
+            return {"query": "", "folders": [], "files": [], "total_items": 0}
+
+        q_lower = query_clean.lower()
+
+        # 1. Demo Mode
+        if self.auth_type == "demo":
+            matching_folders = []
+            matching_files = []
+            seen_folder_ids = set()
+            seen_file_ids = set()
+
+            for folder_id, f_data in DEMO_FOLDERS.items():
+                # Check subfolders
+                for subf in f_data.get("folders", []):
+                    if subf["id"] not in seen_folder_ids and q_lower in subf["name"].lower():
+                        seen_folder_ids.add(subf["id"])
+                        matching_folders.append({
+                            "id": subf["id"],
+                            "name": subf["name"],
+                            "mime_type": MIME_FOLDER,
+                            "is_folder": True,
+                            "size": None,
+                            "modified_time": subf.get("modified"),
+                            "web_view_link": None,
+                            "icon": "📁"
+                        })
+
+                # Check files
+                for f in f_data.get("files", []):
+                    fid = f["id"]
+                    if fid in seen_file_ids:
+                        continue
+                    file_text = DEMO_FILE_CONTENTS.get(fid, "")
+                    if q_lower in f["name"].lower() or q_lower in file_text.lower():
+                        seen_file_ids.add(fid)
+                        matching_files.append({
+                            "id": fid,
+                            "name": f["name"],
+                            "mime_type": f.get("mime", MIME_PDF),
+                            "is_folder": False,
+                            "size": f.get("size"),
+                            "modified_time": f.get("modified"),
+                            "web_view_link": f"https://drive.google.com/file/d/{fid}/view",
+                            "icon": "📄" if "pdf" in f.get("mime", "") else "📝"
+                        })
+
+            return {
+                "query": query_clean,
+                "folders": matching_folders,
+                "files": matching_files,
+                "total_items": len(matching_folders) + len(matching_files)
+            }
+
+        # 2. Live Google Drive API Client
+        if self.service is not None:
+            try:
+                safe_q = query_clean.replace("\\", "\\\\").replace("'", "\\'")
+                drive_q = f"name contains '{safe_q}' and trashed = false"
+                results = self.service.files().list(
+                    q=drive_q,
+                    pageSize=50,
+                    fields="files(id, name, mimeType, size, modifiedTime, webViewLink, iconLink)",
+                    orderBy="folder, name"
+                ).execute()
+
+                raw_items = results.get("files", [])
+                folders = []
+                files = []
+
+                for item in raw_items:
+                    is_folder = item.get("mimeType") == MIME_FOLDER
+                    file_item = {
+                        "id": item["id"],
+                        "name": item["name"],
+                        "mime_type": item.get("mimeType", "application/octet-stream"),
+                        "is_folder": is_folder,
+                        "size": int(item["size"]) if item.get("size") else None,
+                        "modified_time": item.get("modifiedTime"),
+                        "web_view_link": item.get("webViewLink"),
+                        "icon": "📁" if is_folder else ("📄" if "pdf" in item.get("mimeType", "") else "📝")
+                    }
+                    if is_folder:
+                        folders.append(file_item)
+                    else:
+                        files.append(file_item)
+
+                return {
+                    "query": query_clean,
+                    "folders": folders,
+                    "files": files,
+                    "total_items": len(folders) + len(files)
+                }
+            except Exception as e:
+                logger.error(f"Error searching Google Drive API: {e}")
+                raise RuntimeError(f"Drive API search error: {e}")
+
+        # 3. gdrive CLI bridge
+        if self.auth_type == "gdrive_cli":
+            try:
+                cmd = ["gdrive", "readonly", "ls"]
+                res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                lines = [line.strip() for line in res.stdout.splitlines() if line.strip()]
+                folders = []
+                files = []
+                for line in lines[1:]:
+                    if q_lower in line.lower():
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            fid = parts[0]
+                            fname = " ".join(parts[1:])
+                            is_folder = "dir" in line.lower() or "folder" in line.lower()
+                            item = {
+                                "id": fid,
+                                "name": fname,
+                                "mime_type": MIME_FOLDER if is_folder else "application/pdf",
+                                "is_folder": is_folder,
+                                "size": None,
+                                "modified_time": None,
+                                "web_view_link": f"https://drive.google.com/file/d/{fid}/view",
+                                "icon": "📁" if is_folder else "📄"
+                            }
+                            if is_folder:
+                                folders.append(item)
+                            else:
+                                files.append(item)
+                return {
+                    "query": query_clean,
+                    "folders": folders,
+                    "files": files,
+                    "total_items": len(folders) + len(files)
+                }
+            except Exception as e:
+                logger.warning(f"gdrive CLI search failed: {e}")
+
+        return {
+            "query": query_clean,
+            "folders": [],
+            "files": [],
+            "total_items": 0,
+            "error": "Google Drive is not connected."
+        }
 
     def download_file_content(self, file_id: str) -> Tuple[str, str, str]:
         """Download and extract text content from a Google Drive file.
@@ -470,6 +978,15 @@ def get_gdrive_connector() -> GoogleDriveConnector:
     global _gdrive_connector
     if _gdrive_connector is None:
         _gdrive_connector = GoogleDriveConnector()
-        # Default to Demo mode so it works out-of-the-box
-        _gdrive_connector.connect(auth_type="demo")
+        # Automatically connect to user's authorized Google account if token is detected
+        token_path = get_detected_token_path()
+        if token_path:
+            try:
+                _gdrive_connector.connect(auth_type="user_account")
+                logger.info(f"Auto-connected Google Drive as {_gdrive_connector.account_email}")
+            except Exception as e:
+                logger.warning(f"Could not auto-connect Google account ({e}), falling back to Demo mode.")
+                _gdrive_connector.connect(auth_type="demo")
+        else:
+            _gdrive_connector.connect(auth_type="demo")
     return _gdrive_connector

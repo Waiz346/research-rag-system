@@ -2372,6 +2372,222 @@
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\copy.py',
    'PYMODULE'),
+  ('cryptography',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.__about__',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\__about__.py',
+   'PYMODULE'),
+  ('cryptography.exceptions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\exceptions.py',
+   'PYMODULE'),
+  ('cryptography.hazmat',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat._oid',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\_oid.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.backends',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\backends\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.backends.openssl',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\backends\\openssl\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.backends.openssl.backend',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\backends\\openssl\\backend.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.bindings',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\bindings\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.bindings.openssl',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\bindings\\openssl\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.bindings.openssl._conditional',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\bindings\\openssl\\_conditional.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.bindings.openssl.binding',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\bindings\\openssl\\binding.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.decrepit',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\decrepit\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.decrepit.ciphers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\decrepit\\ciphers\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.decrepit.ciphers.algorithms',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\decrepit\\ciphers\\algorithms.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.decrepit.ciphers.modes',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\decrepit\\ciphers\\modes.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives._asymmetric',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\_asymmetric.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives._cipheralgorithm',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\_cipheralgorithm.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives._modes',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\_modes.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives._serialization',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\_serialization.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.dh',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\dh.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.dsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\dsa.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.ec',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\ec.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.ed25519',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\ed25519.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.ed448',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\ed448.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.mldsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\mldsa.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.mlkem',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\mlkem.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.padding',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\padding.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.rsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\rsa.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.types',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\types.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.utils',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\utils.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.x25519',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\x25519.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.asymmetric.x448',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\asymmetric\\x448.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.ciphers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\ciphers\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.ciphers.algorithms',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\ciphers\\algorithms.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.ciphers.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\ciphers\\base.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.ciphers.modes',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\ciphers\\modes.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.constant_time',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\constant_time.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.hashes',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\hashes.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.padding',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\padding.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.serialization',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\serialization\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.serialization.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\serialization\\base.py',
+   'PYMODULE'),
+  ('cryptography.hazmat.primitives.serialization.ssh',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\hazmat\\primitives\\serialization\\ssh.py',
+   'PYMODULE'),
+  ('cryptography.utils',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\utils.py',
+   'PYMODULE'),
+  ('cryptography.x509',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\__init__.py',
+   'PYMODULE'),
+  ('cryptography.x509.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\base.py',
+   'PYMODULE'),
+  ('cryptography.x509.certificate_transparency',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\certificate_transparency.py',
+   'PYMODULE'),
+  ('cryptography.x509.extensions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\extensions.py',
+   'PYMODULE'),
+  ('cryptography.x509.general_name',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\general_name.py',
+   'PYMODULE'),
+  ('cryptography.x509.name',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\name.py',
+   'PYMODULE'),
+  ('cryptography.x509.oid',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\oid.py',
+   'PYMODULE'),
+  ('cryptography.x509.verification',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\cryptography\\x509\\verification.py',
+   'PYMODULE'),
   ('csv',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\csv.py',
@@ -2587,6 +2803,22 @@
   ('email.message',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\email\\message.py',
+   'PYMODULE'),
+  ('email.mime',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\__init__.py',
+   'PYMODULE'),
+  ('email.mime.base',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\base.py',
+   'PYMODULE'),
+  ('email.mime.multipart',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\multipart.py',
+   'PYMODULE'),
+  ('email.mime.nonmultipart',
+   'C:\\Program '
+   'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\email\\mime\\nonmultipart.py',
    'PYMODULE'),
   ('email.parser',
    'C:\\Program '
@@ -3014,6 +3246,262 @@
    'PYMODULE'),
   ('google', '-', 'PYMODULE'),
   ('google._upb', '-', 'PYMODULE'),
+  ('google.api_core',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\__init__.py',
+   'PYMODULE'),
+  ('google.api_core._python_package_support',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\_python_package_support.py',
+   'PYMODULE'),
+  ('google.api_core._python_version_support',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\_python_version_support.py',
+   'PYMODULE'),
+  ('google.api_core.client_options',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\client_options.py',
+   'PYMODULE'),
+  ('google.api_core.exceptions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\exceptions.py',
+   'PYMODULE'),
+  ('google.api_core.general_helpers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\general_helpers.py',
+   'PYMODULE'),
+  ('google.api_core.universe',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\universe.py',
+   'PYMODULE'),
+  ('google.api_core.version',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\version.py',
+   'PYMODULE'),
+  ('google.api_core.version_header',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\api_core\\version_header.py',
+   'PYMODULE'),
+  ('google.auth',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\__init__.py',
+   'PYMODULE'),
+  ('google.auth._agent_identity_utils',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_agent_identity_utils.py',
+   'PYMODULE'),
+  ('google.auth._cache',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_cache.py',
+   'PYMODULE'),
+  ('google.auth._cloud_sdk',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_cloud_sdk.py',
+   'PYMODULE'),
+  ('google.auth._credentials_base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_credentials_base.py',
+   'PYMODULE'),
+  ('google.auth._default',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_default.py',
+   'PYMODULE'),
+  ('google.auth._exponential_backoff',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_exponential_backoff.py',
+   'PYMODULE'),
+  ('google.auth._helpers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_helpers.py',
+   'PYMODULE'),
+  ('google.auth._refresh_worker',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_refresh_worker.py',
+   'PYMODULE'),
+  ('google.auth._regional_access_boundary_utils',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_regional_access_boundary_utils.py',
+   'PYMODULE'),
+  ('google.auth._service_account_info',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\_service_account_info.py',
+   'PYMODULE'),
+  ('google.auth.api_key',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\api_key.py',
+   'PYMODULE'),
+  ('google.auth.app_engine',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\app_engine.py',
+   'PYMODULE'),
+  ('google.auth.aws',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\aws.py',
+   'PYMODULE'),
+  ('google.auth.compute_engine',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\compute_engine\\__init__.py',
+   'PYMODULE'),
+  ('google.auth.compute_engine._metadata',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\compute_engine\\_metadata.py',
+   'PYMODULE'),
+  ('google.auth.compute_engine._mtls',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\compute_engine\\_mtls.py',
+   'PYMODULE'),
+  ('google.auth.compute_engine.credentials',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\compute_engine\\credentials.py',
+   'PYMODULE'),
+  ('google.auth.credentials',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\credentials.py',
+   'PYMODULE'),
+  ('google.auth.crypt',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\__init__.py',
+   'PYMODULE'),
+  ('google.auth.crypt._cryptography_rsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\_cryptography_rsa.py',
+   'PYMODULE'),
+  ('google.auth.crypt._python_rsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\_python_rsa.py',
+   'PYMODULE'),
+  ('google.auth.crypt.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\base.py',
+   'PYMODULE'),
+  ('google.auth.crypt.es',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\es.py',
+   'PYMODULE'),
+  ('google.auth.crypt.es256',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\es256.py',
+   'PYMODULE'),
+  ('google.auth.crypt.rsa',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\crypt\\rsa.py',
+   'PYMODULE'),
+  ('google.auth.environment_vars',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\environment_vars.py',
+   'PYMODULE'),
+  ('google.auth.exceptions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\exceptions.py',
+   'PYMODULE'),
+  ('google.auth.external_account',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\external_account.py',
+   'PYMODULE'),
+  ('google.auth.external_account_authorized_user',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\external_account_authorized_user.py',
+   'PYMODULE'),
+  ('google.auth.iam',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\iam.py',
+   'PYMODULE'),
+  ('google.auth.identity_pool',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\identity_pool.py',
+   'PYMODULE'),
+  ('google.auth.impersonated_credentials',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\impersonated_credentials.py',
+   'PYMODULE'),
+  ('google.auth.jwt',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\jwt.py',
+   'PYMODULE'),
+  ('google.auth.metrics',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\metrics.py',
+   'PYMODULE'),
+  ('google.auth.pluggable',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\pluggable.py',
+   'PYMODULE'),
+  ('google.auth.transport',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\__init__.py',
+   'PYMODULE'),
+  ('google.auth.transport._custom_tls_signer',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\_custom_tls_signer.py',
+   'PYMODULE'),
+  ('google.auth.transport._http_client',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\_http_client.py',
+   'PYMODULE'),
+  ('google.auth.transport._mtls_helper',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\_mtls_helper.py',
+   'PYMODULE'),
+  ('google.auth.transport.mtls',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\mtls.py',
+   'PYMODULE'),
+  ('google.auth.transport.requests',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\transport\\requests.py',
+   'PYMODULE'),
+  ('google.auth.version',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\auth\\version.py',
+   'PYMODULE'),
+  ('google.oauth2',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\__init__.py',
+   'PYMODULE'),
+  ('google.oauth2._client',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\_client.py',
+   'PYMODULE'),
+  ('google.oauth2.challenges',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\challenges.py',
+   'PYMODULE'),
+  ('google.oauth2.credentials',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\credentials.py',
+   'PYMODULE'),
+  ('google.oauth2.gdch_credentials',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\gdch_credentials.py',
+   'PYMODULE'),
+  ('google.oauth2.reauth',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\reauth.py',
+   'PYMODULE'),
+  ('google.oauth2.service_account',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\service_account.py',
+   'PYMODULE'),
+  ('google.oauth2.sts',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\sts.py',
+   'PYMODULE'),
+  ('google.oauth2.utils',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\utils.py',
+   'PYMODULE'),
+  ('google.oauth2.webauthn_handler',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\webauthn_handler.py',
+   'PYMODULE'),
+  ('google.oauth2.webauthn_handler_factory',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\webauthn_handler_factory.py',
+   'PYMODULE'),
+  ('google.oauth2.webauthn_types',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\oauth2\\webauthn_types.py',
+   'PYMODULE'),
   ('google.protobuf',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\protobuf\\__init__.py',
@@ -3154,6 +3642,66 @@
   ('google.rpc.error_details_pb2',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google\\rpc\\error_details_pb2.py',
+   'PYMODULE'),
+  ('google_auth_httplib2',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\google_auth_httplib2.py',
+   'PYMODULE'),
+  ('googleapiclient',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\__init__.py',
+   'PYMODULE'),
+  ('googleapiclient._auth',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\_auth.py',
+   'PYMODULE'),
+  ('googleapiclient._helpers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\_helpers.py',
+   'PYMODULE'),
+  ('googleapiclient.discovery',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\discovery.py',
+   'PYMODULE'),
+  ('googleapiclient.discovery_cache',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\discovery_cache\\__init__.py',
+   'PYMODULE'),
+  ('googleapiclient.discovery_cache.appengine_memcache',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\discovery_cache\\appengine_memcache.py',
+   'PYMODULE'),
+  ('googleapiclient.discovery_cache.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\discovery_cache\\base.py',
+   'PYMODULE'),
+  ('googleapiclient.discovery_cache.file_cache',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\discovery_cache\\file_cache.py',
+   'PYMODULE'),
+  ('googleapiclient.errors',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\errors.py',
+   'PYMODULE'),
+  ('googleapiclient.http',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\http.py',
+   'PYMODULE'),
+  ('googleapiclient.mimeparse',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\mimeparse.py',
+   'PYMODULE'),
+  ('googleapiclient.model',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\model.py',
+   'PYMODULE'),
+  ('googleapiclient.schema',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\schema.py',
+   'PYMODULE'),
+  ('googleapiclient.version',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\googleapiclient\\version.py',
    'PYMODULE'),
   ('graphlib',
    'C:\\Program '
@@ -3598,6 +4146,30 @@
   ('httpcore2._utils',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httpcore2\\_utils.py',
+   'PYMODULE'),
+  ('httplib2',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\__init__.py',
+   'PYMODULE'),
+  ('httplib2.auth',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\auth.py',
+   'PYMODULE'),
+  ('httplib2.certs',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\certs.py',
+   'PYMODULE'),
+  ('httplib2.decode',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\decode.py',
+   'PYMODULE'),
+  ('httplib2.error',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\error.py',
+   'PYMODULE'),
+  ('httplib2.iri2uri',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\httplib2\\iri2uri.py',
    'PYMODULE'),
   ('httptools',
    'C:\\Users\\WAI YAN '
@@ -15505,6 +16077,130 @@
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyarrow\\vendored\\version.py',
    'PYMODULE'),
+  ('pyasn1',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.codec',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.codec.ber',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\ber\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.codec.ber.decoder',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\ber\\decoder.py',
+   'PYMODULE'),
+  ('pyasn1.codec.ber.eoo',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\ber\\eoo.py',
+   'PYMODULE'),
+  ('pyasn1.codec.cer',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\cer\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.codec.cer.decoder',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\cer\\decoder.py',
+   'PYMODULE'),
+  ('pyasn1.codec.der',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\der\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.codec.der.decoder',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\der\\decoder.py',
+   'PYMODULE'),
+  ('pyasn1.codec.streaming',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\codec\\streaming.py',
+   'PYMODULE'),
+  ('pyasn1.compat',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\compat\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.compat.integer',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\compat\\integer.py',
+   'PYMODULE'),
+  ('pyasn1.debug',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\debug.py',
+   'PYMODULE'),
+  ('pyasn1.error',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\error.py',
+   'PYMODULE'),
+  ('pyasn1.type',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1.type.base',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\base.py',
+   'PYMODULE'),
+  ('pyasn1.type.char',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\char.py',
+   'PYMODULE'),
+  ('pyasn1.type.constraint',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\constraint.py',
+   'PYMODULE'),
+  ('pyasn1.type.error',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\error.py',
+   'PYMODULE'),
+  ('pyasn1.type.namedtype',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\namedtype.py',
+   'PYMODULE'),
+  ('pyasn1.type.namedval',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\namedval.py',
+   'PYMODULE'),
+  ('pyasn1.type.opentype',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\opentype.py',
+   'PYMODULE'),
+  ('pyasn1.type.tag',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\tag.py',
+   'PYMODULE'),
+  ('pyasn1.type.tagmap',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\tagmap.py',
+   'PYMODULE'),
+  ('pyasn1.type.univ',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\univ.py',
+   'PYMODULE'),
+  ('pyasn1.type.useful',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1\\type\\useful.py',
+   'PYMODULE'),
+  ('pyasn1_modules',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1_modules\\__init__.py',
+   'PYMODULE'),
+  ('pyasn1_modules.pem',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1_modules\\pem.py',
+   'PYMODULE'),
+  ('pyasn1_modules.rfc2251',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1_modules\\rfc2251.py',
+   'PYMODULE'),
+  ('pyasn1_modules.rfc2459',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1_modules\\rfc2459.py',
+   'PYMODULE'),
+  ('pyasn1_modules.rfc5208',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyasn1_modules\\rfc5208.py',
+   'PYMODULE'),
   ('pybase64',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pybase64\\__init__.py',
@@ -17573,6 +18269,54 @@
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pygments\\util.py',
    'PYMODULE'),
+  ('pyparsing',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\__init__.py',
+   'PYMODULE'),
+  ('pyparsing.actions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\actions.py',
+   'PYMODULE'),
+  ('pyparsing.common',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\common.py',
+   'PYMODULE'),
+  ('pyparsing.core',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\core.py',
+   'PYMODULE'),
+  ('pyparsing.diagram',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\diagram\\__init__.py',
+   'PYMODULE'),
+  ('pyparsing.exceptions',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\exceptions.py',
+   'PYMODULE'),
+  ('pyparsing.helpers',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\helpers.py',
+   'PYMODULE'),
+  ('pyparsing.results',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\results.py',
+   'PYMODULE'),
+  ('pyparsing.testing',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\testing.py',
+   'PYMODULE'),
+  ('pyparsing.unicode',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\unicode.py',
+   'PYMODULE'),
+  ('pyparsing.util',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\util.py',
+   'PYMODULE'),
+  ('pyparsing.warnings',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pyparsing\\warnings.py',
+   'PYMODULE'),
   ('pypdf',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\pypdf\\__init__.py',
@@ -19038,6 +19782,10 @@
   ('src.ingestion.chunker',
    'C:\\Users\\WAI YAN '
    'CHING\\Desktop\\research-rag-system\\src\\ingestion\\chunker.py',
+   'PYMODULE'),
+  ('src.ingestion.gdrive_connector',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\src\\ingestion\\gdrive_connector.py',
    'PYMODULE'),
   ('src.rag',
    'C:\\Users\\WAI YAN '
@@ -20994,6 +21742,26 @@
   ('unittest.util',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\unittest\\util.py',
+   'PYMODULE'),
+  ('uritemplate',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\uritemplate\\__init__.py',
+   'PYMODULE'),
+  ('uritemplate.api',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\uritemplate\\api.py',
+   'PYMODULE'),
+  ('uritemplate.orderedset',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\uritemplate\\orderedset.py',
+   'PYMODULE'),
+  ('uritemplate.template',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\uritemplate\\template.py',
+   'PYMODULE'),
+  ('uritemplate.variable',
+   'C:\\Users\\WAI YAN '
+   'CHING\\Desktop\\research-rag-system\\.venv\\Lib\\site-packages\\uritemplate\\variable.py',
    'PYMODULE'),
   ('urllib',
    'C:\\Program '

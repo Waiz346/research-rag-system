@@ -1,6 +1,7 @@
 """Application configuration settings."""
 import sys
 import os
+from typing import Optional
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
@@ -16,6 +17,9 @@ class Settings(BaseSettings):
     API_PORT: int = 8000
     ENVIRONMENT: str = "development"
 
+    # Database configuration (Cloud PostgreSQL / SQLite fallback)
+    DATABASE_URL: Optional[str] = None
+
     # Storage paths
     DATA_DIR: Path = BASE_DIR / "data"
     DOWNLOADS_DIR: Path = BASE_DIR / "data" / "downloads"
@@ -26,7 +30,7 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "mock"  # "mock", "openai", "gemini", or "ollama"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-1.5-pro"  # "gemini-1.5-pro", "gemini-1.5-flash", or "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-3.5-flash-lite"  # "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-latest"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
 
     # Chunking

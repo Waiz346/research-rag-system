@@ -15,6 +15,13 @@ Ingest peer-reviewed papers from ArXiv, local files, or Google Drive, perform se
   - **Traceable Citations**: Expandable citation cards displaying canonical section badges (`🏷️ Methodology`, `🏷️ Abstract`), similarity scores, and verbatim excerpts.
   - **On-Demand Document Inspector**: Read full paper text, view section outlines, and manage sources without leaving the UI.
 
+- **🗂️ Workspaces, Folders & Multi-Thread Conversations**:
+  - **Hierarchical Topic Organization**: Every conversation resides in a designated Workspace / Folder (e.g. *Biomedical RAG*, *Financial Forecasting*, *NLP Survey*).
+  - **Multiple Sub-Conversations per Workspace**: Switch seamlessly between parallel discussion threads within the same workspace.
+  - **Automatic Thread Titling**: Conversations are automatically titled based on your initial prompt.
+  - **Online Cloud Database Persistence**: Direct connection to managed cloud PostgreSQL databases (Supabase, Neon, AWS RDS) via SQLAlchemy 2.0 and pure-Python `pg8000`, with zero C compiler dependencies on Windows.
+  - **Graceful Local Fallback**: Automatically falls back to local SQLite (`data/workspaces.db`) when `DATABASE_URL` is omitted, working immediately out-of-the-box.
+
 - **📁 Google Drive Cloud Connector**:
   - Connect and browse Google Drive folders, subfolders, and files directly within the Sources workspace.
   - **5 Authentication Modes**:
@@ -164,11 +171,12 @@ flowchart TD
     end
 
     subgraph CONNECTOR["🔌 GoogleDriveConnector (src/ingestion/gdrive_connector.py)"]
-        AUTH{"Authentication Mode"}
+        AUTH{"Authentication & Account Selection"}
+        AUTH -->|1-Click Fast Switch| SW["Multi-Account Store (data/gdrive_accounts/)"]
+        AUTH -->|OAuth Chooser| OAC["Browser Sign-in (prompt='select_account')"]
         AUTH -->|Enterprise| SA["Service Account JSON"]
-        AUTH -->|User Token| OA["OAuth 2.0 Access Token"]
+        AUTH -->|Manual Token| OA["OAuth 2.0 Access Token"]
         AUTH -->|Public Links| AK["Google API Key"]
-        AUTH -->|Local Agent| CLI["gdrive CLI Bridge"]
         AUTH -->|Instant Test| DEMO["Interactive Demo Mode"]
     end
 
@@ -265,6 +273,21 @@ OPENAI_API_KEY=your_openai_api_key
 DASHSCOPE_API_KEY=your_qwen_api_key
 ZHIPUAI_API_KEY=your_glm_api_key
 ```
+
+### 4. Online Cloud Database Configuration (Workspaces & Conversations)
+By default, the system stores workspaces, sub-conversations, and message history locally in SQLite (`data/workspaces.db`). To synchronize and persist across team environments or host in the cloud, configure `DATABASE_URL` in `.env`:
+
+```env
+# Example 1: Supabase (PostgreSQL with pure-Python driver)
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+
+# Example 2: Neon Serverless Postgres
+DATABASE_URL=postgresql://[USER]:[PASSWORD]@[ENDPOINT].neon.tech/neondb?sslmode=require
+
+# Example 3: Local SQLite fallback (default when DATABASE_URL is unset)
+# DATABASE_URL=sqlite:///data/workspaces.db
+```
+*Note: Any standard `postgres://` or `postgresql://` URI is automatically adapted to pure-Python `postgresql+pg8000://` with zero external C-compiler dependencies.*
 
 ---
 

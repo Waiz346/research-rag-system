@@ -1,15 +1,77 @@
+# ==============================================================================
+# Git Ignore - Research RAG System
+# Ensures zero secrets, tokens, accounts, databases, or build artifacts are pushed
+# ==============================================================================
+
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+*.env
+token.json
+credentials.json
+client_secret*.json
+*.pem
+*.key
+
+# Google OAuth Credentials & User Account Storage
+data/gdrive_accounts/
+data/classroom_accounts/
+data/classroom_oauth_config.json
+data/tokens/
+**/gdrive_accounts/
+**/classroom_accounts/
+
+# Local Databases, Indexes & Downloaded User Documents
+data/workspaces.db
+data/chroma_db/
+data/test_db/
+data/downloads/
+data/documents/
+*.db
+*.sqlite3
+*.bin
+
+# PyInstaller Binaries and Build Artifacts
+build/
+dist/
+*.spec.bak
+
+# Python Artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-*.env
+*.so
+.Python
+
+# Virtual Environments
 .venv/
 env/
 venv/
 ENV/
-data/chroma_db/
-data/downloads/
+env.bak/
+venv.bak/
+
+# Testing & Coverage
 .pytest_cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
+
+# Logs & Temporary Files
 *.log
+logs/
+tmp/
+temp/
+
+# Operating System Specific
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo

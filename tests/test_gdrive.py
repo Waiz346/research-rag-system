@@ -106,3 +106,30 @@ def test_gdrive_api_endpoints_flow():
     # 8. Clean up test document
     del_res = client.delete(f"/documents/{doc_id}")
     assert del_res.status_code == 200
+
+def test_gdrive_accounts_endpoints():
+    # 1. Test listing accounts
+    acc_res = client.get("/gdrive/accounts")
+    assert acc_res.status_code == 200
+    acc_data = acc_res.json()
+    assert "accounts" in acc_data
+    assert "count" in acc_data
+    assert isinstance(acc_data["accounts"], list)
+
+    # 2. Test login status
+    st_res = client.get("/gdrive/accounts/login-status")
+    assert st_res.status_code == 200
+    st_data = st_res.json()
+    assert "status" in st_data
+
+    # 3. Test switching to nonexistent account
+    sw_err = client.post("/gdrive/accounts/switch", json={"email": "nonexistent_user_xyz@gmail.com"})
+    assert sw_err.status_code == 404
+
+    # 4. If any accounts exist, test switching to first one
+    if acc_data["accounts"]:
+        target_email = acc_data["accounts"][0]["email"]
+        sw_ok = client.post("/gdrive/accounts/switch", json={"email": target_email})
+        assert sw_ok.status_code == 200
+        assert sw_ok.json()["status"] == "success"
+

@@ -1,100 +1,84 @@
 {
-  "1": {
-    "doc_id": "1",
-    "title": "test",
-    "source_type": "arxiv",
-    "filename": "1.txt",
-    "authors": "Unknown",
-    "citation_count": 0,
-    "chunk_count": 1,
-    "sections": [
-      "General"
-    ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
-  },
   "2506.06962v3": {
     "doc_id": "2506.06962v3",
     "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
     "source_type": "arxiv",
-    "filename": "2506.06962v3.txt",
+    "filename": "2506.06962v3.pdf",
     "authors": "Jingyuan Qi, Zhiyang Xu, Qifan Wang, Lifu Huang",
     "citation_count": 0,
     "chunk_count": 3,
     "sections": [
-      "General"
+      "Abstract"
     ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
+    "created_at": "2026-10-13 12:17:23",
+    "char_count": 1552
   },
   "2504.13684v1": {
     "doc_id": "2504.13684v1",
     "title": "Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation",
     "source_type": "arxiv",
-    "filename": "2504.13684v1.txt",
+    "filename": "2504.13684v1.pdf",
     "authors": " Xiangrong,  Zhu, Yuan Xu, Tianjian Liu, Jingwei Sun, Yu Zhang, Xin Tong",
-    "citation_count": 2,
+    "citation_count": 0,
     "chunk_count": 2,
     "sections": [
-      "General"
+      "Abstract"
     ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
+    "created_at": "2026-10-13 12:17:23",
+    "char_count": 1307
   },
-  "2504.17204v1": {
-    "doc_id": "2504.17204v1",
-    "title": "Factually: Exploring Wearable Fact-Checking for Augmented Truth Discernment",
+  "2005.11401v4": {
+    "doc_id": "2005.11401v4",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
     "source_type": "arxiv",
-    "filename": "2504.17204v1.txt",
-    "authors": "Chitralekha Gupta, Hanjun Wu, Praveen Sasikumar, Shreyas Sridhar, Priambudi Bagaskara, Suranga Nanayakkara",
-    "citation_count": 0,
-    "chunk_count": 3,
+    "filename": "2005.11401v4.pdf",
+    "authors": "Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich K\u00fcttler, Mike Lewis, Wen-tau Yih, Tim Rockt\u00e4schel, Sebastian Riedel, Douwe Kiela",
+    "citation_count": 3850,
+    "chunk_count": 61,
     "sections": [
-      "General"
+      "Abstract",
+      "Introduction",
+      "Experiments",
+      "Related Work",
+      "Discussion"
     ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
+    "created_at": "2026-10-13 12:35:16",
+    "char_count": 71024
   },
-  "2309.15217v2": {
-    "doc_id": "2309.15217v2",
-    "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation",
+  "2005.11401": {
+    "doc_id": "2005.11401",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive Tasks",
     "source_type": "arxiv",
-    "filename": "2309.15217v2.txt",
-    "authors": "Shahul Es, Jithin James, Luis Espinosa-Anke, Steven Schockaert",
-    "citation_count": 1160,
-    "chunk_count": 2,
+    "filename": "2005.11401.pdf",
+    "authors": "Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Douwe Kiela",
+    "citation_count": 3850,
+    "chunk_count": 5,
     "sections": [
-      "General"
+      "Retrieval-Augmented Generation For Knowledge-Intensive Tasks",
+      "Abstract",
+      "1. Introduction",
+      "2. Methods",
+      "Experiments"
     ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
+    "created_at": "2026-10-13 12:50:00",
+    "char_count": 1400
   },
-  "026352aeba69": {
-    "doc_id": "026352aeba69",
-    "title": "STPAgent: A Writer-Reviewer multi-agent architecture for AI-assisted Unsafe Control Action identification",
+  "2310.11511": {
+    "doc_id": "2310.11511",
+    "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
     "source_type": "arxiv",
-    "filename": "026352aeba69.txt",
-    "authors": "Dimitrije Stojanovi\u0107, Bogdan Pavkovi\u0107, Nenad \u010ceti\u0107",
-    "citation_count": 0,
-    "chunk_count": 1,
+    "filename": "2310.11511.pdf",
+    "authors": "Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, Hannaneh Hajishirzi",
+    "citation_count": 1300,
+    "chunk_count": 5,
     "sections": [
-      "General"
+      "Self-Rag: Learning To Retrieve, Generate, And Critique Through Self-Reflection",
+      "Abstract",
+      "1. Introduction",
+      "2. Framework & Training",
+      "Experiments"
     ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
-  },
-  "e9a82d33ce0f": {
-    "doc_id": "e9a82d33ce0f",
-    "title": "Knowledge-guided retrieval-augmented generation for semantic interaction tasks in data-scarce industrial vertical fields",
-    "source_type": "arxiv",
-    "filename": "e9a82d33ce0f.txt",
-    "authors": "Ying Hou, Kai-Ji Hou, Yong-Ping Du, Hong-Gui Han",
-    "citation_count": 0,
-    "chunk_count": 1,
-    "sections": [
-      "General"
-    ],
-    "created_at": "2026-10-12 14:01:31",
-    "char_count": 0
+    "created_at": "2026-10-13 12:50:00",
+    "char_count": 1254
   }
 }

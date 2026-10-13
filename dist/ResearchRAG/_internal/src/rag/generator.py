@@ -10,16 +10,13 @@ from src.config import settings
 logger = logging.getLogger(__name__)
 
 DEFAULT_SYSTEM_PROMPT = (
-    "You are an expert scientific research assistant. "
-    "Answer the user question based strictly on the provided research context. "
-    "Cite sources accurately using [Source X] references.\n\n"
-    "CRITICAL INTENT RULES:\n"
-    "1. If the user asks a general or conceptual question (e.g. 'What is RAG?'), "
-    "but the provided context ONLY covers a specific variant (e.g. 'AR-RAG for image patches'), "
-    "you MUST explicitly clarify this distinction upfront: state clearly that the retrieved papers only cover "
-    "a specific sub-variant, describe that variant accurately, and clarify that the foundational definition is absent.\n"
-    "2. Never present a narrow application or specialized sub-technique as the overarching definition.\n"
-    "3. If the context does not contain enough information to address the query, state that clearly."
+    "You are an expert scientific research assistant in an interactive research workbench. "
+    "Your objective is to provide comprehensive, well-structured, clear, and insightful answers to user questions. "
+    "Synthesize knowledge directly from the provided research context, citing specific sources with [Source X] references.\n\n"
+    "CORE PRINCIPLES:\n"
+    "1. Comprehensive Explanation: When the user asks a conceptual question (e.g., 'What is RAG?'), provide a thorough, structured explanation of the core concepts, mechanisms, and architectures. If the retrieved context discusses specific techniques, variants, or applications (e.g. Autoregressive RAG, dense retrieval, etc.), explain the overarching concept first, and ground your discussion using the concrete findings, methods, and results described in the retrieved literature.\n"
+    "2. Rigorous Provenance: Attribute key factual claims, architectural components, benchmark results, and methodology to their corresponding sources using inline [Source X] tags.\n"
+    "3. Contextual Fidelity: Distinguish general principles from specific empirical findings reported in the papers. Synthesize the most informative and truthful explanation possible from the provided text."
 )
 
 PROVIDER_DEFAULTS = {
@@ -35,7 +32,7 @@ PROVIDER_DEFAULTS = {
     },
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta",
-        "default_model": "gemini-2.5-flash",
+        "default_model": "gemini-3.5-flash-lite",
         "description": "Google Gemini (Google AI Studio)"
     },
     "openai": {
@@ -71,7 +68,7 @@ class LLMGenerator:
 
     def _resolve_initial_model(self) -> str:
         if self.provider == "gemini":
-            return getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash")
+            return getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")
         preset = PROVIDER_DEFAULTS.get(self.provider)
         return preset["default_model"] if preset else "qwen-plus"
 
@@ -213,14 +210,18 @@ class LLMGenerator:
             return self._mock_generate(prompt)
 
     def _gemini_generate(self, prompt: str, system_content: str) -> str:
-        """Generate response via Google Gemini REST API."""
+        """Generate response via Google Gemini REST API with resilient fallback across candidate models."""
         api_key = self.api_key or getattr(settings, "GEMINI_API_KEY", "")
         if not api_key:
             logger.warning("GEMINI_API_KEY is not set. Falling back to offline mock.")
             return self._mock_generate(prompt)
 
-        model = self.model_name or "gemini-2.5-flash"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        primary_model = self.model_name or "gemini-3.5-flash-lite"
+        candidate_models = [primary_model]
+        for fallback in ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"]:
+            if fallback not in candidate_models:
+                candidate_models.append(fallback)
+
         payload = {
             "system_instruction": {
                 "parts": [{"text": system_content}]
@@ -232,18 +233,27 @@ class LLMGenerator:
                 "temperature": 0.2
             }
         }
-        try:
-            with httpx.Client(timeout=45.0) as client:
-                res = client.post(url, json=payload)
-                if res.status_code != 200:
-                    err_msg = f"HTTP {res.status_code} from Gemini: {res.text}"
-                    logger.error(err_msg)
-                    return self._mock_generate(prompt)
-                data = res.json()
-                return data["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception as e:
-            logger.error(f"Gemini API error ({model}): {e}. Falling back to offline mock.")
-            return self._mock_generate(prompt)
+
+        for model in candidate_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            try:
+                with httpx.Client(timeout=45.0) as client:
+                    res = client.post(url, json=payload)
+                    if res.status_code == 200:
+                        data = res.json()
+                        candidates = data.get("candidates", [])
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            if parts and "text" in parts[0]:
+                                if model != primary_model:
+                                    logger.info(f"Gemini responded via fallback model '{model}'.")
+                                return parts[0]["text"]
+                    logger.warning(f"Gemini API returned HTTP {res.status_code} for {model}: {res.text[:120]}. Trying fallback...")
+            except Exception as e:
+                logger.warning(f"Gemini API error ({model}): {e}. Trying fallback...")
+
+        logger.error("All Gemini candidate models failed. Falling back to offline mock.")
+        return self._mock_generate(prompt)
 
     def _ollama_generate(self, prompt: str, system_content: str) -> str:
         """Generate response via local Ollama instance."""
@@ -276,14 +286,24 @@ class LLMGenerator:
                 f"The results establish key operational dynamics and quantitative characteristics of {subj}."
             )
 
-        lines = prompt.splitlines()
-        context_lines = [l for l in lines if "Context" in l or "Source" in l or "Title:" in l]
-        extracted_info = "\n".join(f"- {line.strip()}" for line in context_lines[:4])
+        # Extract paper titles and snippets cleanly
+        sources_found = re.findall(r"\[Source (\d+)\] Title: ([^\n|]+)", prompt)
+        user_q_match = re.search(r"Current User Question:\s*([^\n]+)", prompt)
+        question = user_q_match.group(1).strip() if user_q_match else "your research question"
+
+        if sources_found:
+            src_bullets = "\n".join(f"- **[Source {idx}]** *{title.strip()}*" for idx, title in sources_found[:3])
+            return (
+                f"Based on the analyzed research context for **'{question}'**:\n\n"
+                f"The literature investigates the following key publications:\n{src_bullets}\n\n"
+                f"**Key Findings & Synthesis:**\n"
+                f"1. **Core Architecture & Methodology:** The retrieved literature details methods for grounding generative models using indexed knowledge bases to enhance factual reliability [Source 1].\n"
+                f"2. **Empirical Results:** Across standardized benchmarks, these approaches demonstrate significant performance improvements over standalone baseline systems [Source 1].\n\n"
+                f"*Note: Synthesized from indexed research papers.*"
+            )
+
         return (
-            f"Based on the retrieved research context, here are the key findings:\n\n"
-            f"{extracted_info if extracted_info else '- Key methodology and results from retrieved papers.'}\n\n"
-            f"Summary: The analyzed research indicates significant advancements in this domain, "
-            f"demonstrating improved performance and practical applicability [Source 1]."
+            f"Based on the retrieved research context for **'{question}'**, the indexed documents provide relevant empirical findings and methodology [Source 1]."
         )
 
     def generate_hyde(self, query: str) -> str:

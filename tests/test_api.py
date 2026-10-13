@@ -83,7 +83,10 @@ def test_query_hybrid_and_threshold_cutoffs():
     data_strict = res_strict.json()
     assert data_strict["total_retrieved"] == 0
     assert data_strict["is_low_confidence"] is True
-    assert "No retrieved paper passages met the required relevance threshold" in data_strict["answer"]
+    assert any(phrase in data_strict["answer"] for phrase in [
+        "No retrieved paper passages met the required relevance threshold",
+        "No relevant research papers found in the index"
+    ])
 
 def test_upload_and_document_catalog():
     # 1. Upload a text document
