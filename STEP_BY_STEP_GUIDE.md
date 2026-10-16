@@ -11,7 +11,7 @@ This guide is designed for Data Science students looking to master production Ma
 4. [Phase 3: Retrieval, Grounding & Citations](#chapter-4-phase-3-retrieval-grounding--citations)
 5. [Phase 4: Serving Inference with FastAPI](#chapter-5-phase-4-serving-inference-with-fastapi)
 6. [Phase 5: Automated Evaluations (The RAG Triad)](#chapter-6-phase-5-automated-evaluations)
-7. [Phase 6: Interactive Dashboard with Streamlit](#chapter-7-phase-6-interactive-dashboard)
+7. [Phase 6: Interactive Web Workbench (`frontend/index.html`)](#chapter-7-phase-6-interactive-dashboard)
 8. [Phase 7: Containerization & Deployment](#chapter-8-phase-7-containerization--deployment)
 9. [Portfolio & Interview Presentation Guide](#chapter-9-portfolio--interview-guide)
 
@@ -102,6 +102,7 @@ Data science models belong behind standard HTTP REST APIs.
 - It uses Python's `asyncio` for high-throughput, non-blocking I/O.
 
 ### Key Endpoints:
+- `GET /`: Serves the standalone NexusRAG HTML5/Tailwind/ES6 Research Workbench.
 - `POST /ingest`: Triggers paper collection and vector indexing.
 - `POST /query`: Semantic retrieval and LLM answer generation.
 - `POST /evaluate`: Runs the evaluation pipeline on demand.
@@ -131,11 +132,11 @@ We implement the **RAG Triad**:
 
 ## Chapter 7: Phase 6: Interactive Dashboard
 
-### Streamlit Integration (`frontend/app.py`)
-Rather than forcing team members or reviewers to use cURL or Postman, we provide a clean, modern graphical dashboard:
-- **Literature Explorer**: Search ArXiv live and index papers with a single click.
-- **Q&A Interface**: Ask questions, view latency, and browse verified citation cards.
-- **Evaluation Dashboard**: Visual progress bars and rationale breakdowns for Context Relevance, Faithfulness, and Answer Relevance.
+### Standalone NexusRAG Workbench (`frontend/index.html`)
+Rather than relying on heavy server-side widget frameworks, we serve a responsive, zero-dependency **HTML5 + Tailwind CSS + ES6 JavaScript** single-page application directly from FastAPI:
+- **Search & Ingest Workbench**: Upload PDFs, query ArXiv, or connect Google Drive & Classroom with a single click.
+- **Synthesized Research Report**: View grounded answers with interactive inline citation pills (`[1]`, `[2]`) that auto-scroll to the underlying vector chunk.
+- **Vector Chunk Inspector & RAG Triad**: Real-time similarity cutoff filtering, keyword highlighting, and automated Context Relevance, Faithfulness, and Answer Relevance bars.
 
 ---
 
@@ -143,8 +144,8 @@ Rather than forcing team members or reviewers to use cURL or Postman, we provide
 
 ### Docker (`Dockerfile` & `docker-compose.yml`)
 *"It works on my machine"* is unacceptable in production engineering.
-- The `Dockerfile` packages the Python environment, dependencies, and code into a self-contained image.
-- `docker-compose.yml` launches both the FastAPI backend and Streamlit frontend together, mapping persistent storage volumes to `./data`.
+- The `Dockerfile` packages the Python environment, dependencies, and standalone UI into a self-contained image.
+- `docker-compose.yml` launches the unified FastAPI backend + NexusRAG Web Workbench on port `8000`, mapping persistent storage volumes to `./data`.
 
 ---
 
@@ -152,14 +153,14 @@ Rather than forcing team members or reviewers to use cURL or Postman, we provide
 
 ### 1. GitHub Repository Checklist
 - Push this code to GitHub with a descriptive title: `arxiv-rag-system` or `production-rag-eval-pipeline`.
-- Include screenshots of the Streamlit dashboard in your `README.md`.
+- Include screenshots of the NexusRAG Workbench in your `README.md`.
 - Add a badge for Pytest passing.
 
 ### 2. Bullet Points for Your Resume
 ```markdown
 - Built an end-to-end ArXiv research intelligence pipeline using FastAPI, ChromaDB, and Python, indexing 1,000+ chunks with custom sliding-window chunking.
 - Implemented an automated RAG evaluation framework (RAG Triad) to quantify Context Relevance, Faithfulness, and Answer Relevance, reducing hallucination risk.
-- Architected multi-provider LLM support (OpenAI, Gemini, Ollama, and offline mocks) and deployed via Docker Compose with an interactive Streamlit UI.
+- Architected multi-provider LLM support (OpenAI, Gemini, Ollama, and offline mocks) and deployed via Docker Compose with an interactive HTML5/ES6 Research Workbench.
 ```
 
 ### 3. Talking Points During an Interview

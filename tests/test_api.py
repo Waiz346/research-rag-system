@@ -11,6 +11,19 @@ def test_health_check():
     assert data["status"] == "healthy"
     assert "indexed_documents_count" in data
 
+
+def test_standalone_ui_served():
+    for path in ["/", "/ui"]:
+        res = client.get(path)
+        assert res.status_code == 200
+        assert "text/html" in res.headers.get("content-type", "")
+        assert "NexusRAG" in res.text
+        assert "Search & Ingest Workbench" in res.text
+
+    info_res = client.get("/api/info")
+    assert info_res.status_code == 200
+    assert info_res.json()["ui"] == "/"
+
 def test_query_endpoint():
     response = client.post(
         "/query",

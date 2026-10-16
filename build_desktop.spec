@@ -1,36 +1,35 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller specification file for Research RAG Intelligence Studio."""
+"""PyInstaller specification file for NexusRAG Research Intelligence Workbench."""
 
+import os
 import sys
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules
+from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
-import os
 # Base repository directory (SPECPATH is injected by PyInstaller)
 ROOT_DIR = Path(SPECPATH).resolve()
 os.chdir(ROOT_DIR)
 
-# 1. Collect all package data and hidden imports for complex dynamic packages
-streamlit_datas, streamlit_binaries, streamlit_hidden = collect_all('streamlit')
+# 1. Collect package data and hidden imports for dynamic packages (no Streamlit)
 chromadb_datas, chromadb_binaries, chromadb_hidden = collect_all('chromadb')
 webview_datas, webview_binaries, webview_hidden = collect_all('webview')
 uvicorn_datas, uvicorn_binaries, uvicorn_hidden = collect_all('uvicorn')
 
-# 2. Local application source data
+# 2. Local application source data (includes standalone frontend/index.html)
 app_datas = [
     (str(ROOT_DIR / 'frontend'), 'frontend'),
     (str(ROOT_DIR / 'src'), 'src'),
 ]
 
 # Merge datas and binaries
-all_datas = app_datas + streamlit_datas + chromadb_datas + webview_datas + uvicorn_datas
-all_binaries = streamlit_binaries + chromadb_binaries + webview_binaries + uvicorn_binaries
+all_datas = app_datas + chromadb_datas + webview_datas + uvicorn_datas
+all_binaries = chromadb_binaries + webview_binaries + uvicorn_binaries
 
 # 3. Explicit hidden imports to prevent runtime missing-module exceptions
 all_hiddenimports = list(set(
-    streamlit_hidden + chromadb_hidden + webview_hidden + uvicorn_hidden + [
+    chromadb_hidden + webview_hidden + uvicorn_hidden + [
         'uvicorn',
         'uvicorn.logging',
         'uvicorn.loops',
@@ -63,9 +62,13 @@ all_hiddenimports = list(set(
         'src.ingestion.chunker',
         'src.ingestion.arxiv_collector',
         'src.ingestion.gdrive_connector',
+        'src.ingestion.classroom_connector',
+        'src.storage.workspace_store',
         'googleapiclient',
         'google.auth',
         'google.oauth2',
+        'sqlalchemy',
+        'pg8000',
         'src.rag.generator',
         'src.rag.pipeline',
         'src.evals.evaluator',
@@ -83,6 +86,7 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        'streamlit',
         'pytest',
         'IPython',
         'jupyter',
@@ -107,7 +111,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,  # Keep console enabled initially so any unexpected launch logs are visible
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

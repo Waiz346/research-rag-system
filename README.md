@@ -36,7 +36,7 @@ Ingest peer-reviewed papers from ArXiv, local files, or Google Drive, perform se
 - **🖥️ Standalone Windows Desktop App (`ResearchRAG.exe`)**:
   - Fully compiled native Windows application using PyInstaller and Microsoft Edge WebView2 (`pywebview`).
   - Launches with its own borderless window—no terminal windows, command lines, or browser address bars.
-  - Concurrently runs the FastAPI backend and Streamlit studio in background worker threads with automated port conflict resolution.
+  - Runs the unified FastAPI backend and standalone HTML5/ES6 workbench in a background worker thread with automated port conflict resolution.
   - Persistent data storage (`dist/ResearchRAG/data/`) located right beside the executable.
 
 - **⚡ Memory-Efficient Document Catalog (Manifest Projection Pattern)**:
@@ -113,8 +113,8 @@ flowchart TD
     end
 
     subgraph CLIENT["💻 Client Layer"]
-        UI["Streamlit Conversational Studio (NotebookLM UI)"] <--> FASTAPI["FastAPI REST Service (port 8000)"]
-        DESK["Standalone Desktop Shell (ResearchRAG.exe / Edge WebView2)"] <--> UI
+        UI["Standalone NexusRAG HTML5 / Tailwind / ES6 Workbench (frontend/index.html)"] <--> FASTAPI["FastAPI Unified Server (port 8000)"]
+        DESK["Standalone Desktop Shell (ResearchRAG.exe / Edge WebView2)"] <--> FASTAPI
         FASTAPI <--> RETRIEVAL
         FASTAPI <--> INGESTION
         FASTAPI <--> INFERENCE
@@ -201,7 +201,7 @@ flowchart TD
 sequenceDiagram
     autonumber
     actor User as User / Researcher
-    participant UI as Streamlit Web UI
+    participant UI as NexusRAG Web Workbench
     participant API as FastAPI Backend
     participant Cat as Document Catalog
     participant Disk as Local Disk Storage
@@ -293,20 +293,15 @@ DATABASE_URL=postgresql://[USER]:[PASSWORD]@[ENDPOINT].neon.tech/neondb?sslmode=
 
 ## 🏃 Running the Application
 
-### Option A: Local Execution (Recommended)
+### Option A: Unified Local Server (Recommended — Zero Streamlit Overhead)
 
-1. **Start the FastAPI Backend Service**:
-   ```powershell
-   .\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
-   ```
-   - Interactive OpenAPI Documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-   - Health Check: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
-
-2. **Start the Streamlit Conversational Studio**:
-   ```powershell
-   .\.venv\Scripts\streamlit.exe run frontend/app.py --server.port=8501
-   ```
-   - Web Application: [http://localhost:8501](http://localhost:8501)
+Start the unified FastAPI + NexusRAG HTML5 Workbench server on a single port:
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+- **NexusRAG Interactive Web Workbench**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- **Interactive OpenAPI Documentation**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **Health Check**: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
 
 ---
 
@@ -315,9 +310,9 @@ DATABASE_URL=postgresql://[USER]:[PASSWORD]@[ENDPOINT].neon.tech/neondb?sslmode=
 You can launch the system as a self-contained Windows desktop app with its own native window:
 
 1. **Direct Launch**:
-   - Navigate to `dist/ResearchRAG/`
+   - Navigate to `dist/ResearchRAG/` (or run `python desktop_app.py`)
    - Double-click **`ResearchRAG.exe`** (or `Launch_Research_RAG.bat`)
-   - It boots both the backend API and Streamlit studio automatically and opens a native desktop window powered by Microsoft Edge WebView2.
+   - Boots the unified FastAPI + NexusRAG HTML5 Workbench automatically and opens a native desktop window powered by Microsoft Edge WebView2.
 
 2. **Re-compiling the Executable**:
    If you modify code and want to recompile the desktop application:
@@ -330,32 +325,30 @@ You can launch the system as a self-contained Windows desktop app with its own n
 
 ### Option C: Docker Compose
 
-Launch the full stack in isolated containers:
+Launch the unified stack in an isolated container:
 ```bash
 docker-compose up --build
 ```
-- **FastAPI**: `http://localhost:8000`
-- **Streamlit UI**: `http://localhost:8501`
+- **NexusRAG Workbench & API**: `http://localhost:8000`
 
 ---
 
-## 🧭 How to Use the NotebookLM-Style Studio
+## 🧭 How to Use the NexusRAG Workbench
 
-1. **Add Sources**:
-   - Navigate to the **📚 Sources** column on the left.
-   - **Upload Tab**: Drag and drop `.pdf`, `.txt`, or `.md` papers.
-   - **ArXiv Tab**: Search for papers by keyword or citation network (e.g., papers citing `"2005.11401"`).
-   - **Google Drive Tab**: Connect via Service Account, OAuth token, API key, local `gdrive` CLI, or Demo mode. Browse folders and click **"📥 Import into RAG"** to ingest Drive papers directly.
-2. **Select Active Scope**:
-   - Check or uncheck papers in the source list. 
-   - Questions will be answered **strictly** using checked papers, or across the whole library if none are selected.
-3. **Inspect Documents**:
-   - Click **"View & Read"** on any paper to open the on-demand inspector and examine its full text and detected academic sections.
-4. **Chat in the Conversational Studio**:
-   - Ask research questions in the right column.
-   - Inspect the expandable citations beneath each answer to view source section badges (`🏷️ Methodology`, `🏷️ Experiments`), similarity scores, and exact excerpts.
-5. **Switch Models Dynamically**:
-   - Use the sidebar model selector to switch between Gemini, OpenAI, Qwen, GLM, Ollama, and Mock Mode on the fly.
+1. **Add Sources (`Ingest` Tab)**:
+   - Switch to the **Ingest** mode in the left workbench panel.
+   - **Upload**: Select `.pdf`, `.txt`, or `.md` papers for section-aware chunking.
+   - **ArXiv**: Search for papers by keyword or citation network (e.g., papers citing `"2005.11401"`).
+   - **Google Drive & Classroom**: Connect via Demo mode or OAuth 2.0 to browse and import course materials and Drive PDFs directly into your active workspace.
+2. **Select Active Scope (`Sources` Tab)**:
+   - Check or uncheck papers in the source list to scope RAG retrieval strictly to selected documents, or click the eye icon to inspect full document text on demand.
+3. **Run & Inspect (`Query` Tab)**:
+   - Choose a pre-built research scenario or select **⚡ Live Indexed Corpus (ChromaDB + BM25 API)**.
+   - Tune **Top-K**, **Cosine Similarity Cutoff**, and **Hybrid Reranker & HyDE** sliders in real time.
+   - Click inline citation pills (`[1]`, `[2]`) in the Synthesized Research Report to auto-scroll and highlight the exact underlying vector chunk card.
+   - Click **Evaluate Triad** to benchmark Context Relevance, Faithfulness, and Answer Relevance.
+4. **Switch Models Dynamically**:
+   - Click the **LLM** badge in the top telemetry bar to switch between Gemini, OpenAI, Qwen, GLM, Ollama, and Mock Mode on the fly.
 
 ---
 
@@ -363,6 +356,7 @@ docker-compose up --build
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
+| `GET` | `/` or `/ui` | Serves the standalone NexusRAG HTML5 / Tailwind / ES6 Research Workbench |
 | `POST` | `/documents/upload` | Multipart file upload (`.pdf`, `.txt`, `.md`) with section chunking and indexing |
 | `GET` | `/documents` | Memory-efficient list of indexed documents (~200B metadata manifest per doc) |
 | `GET` | `/documents/{doc_id}` | On-demand lazy retrieval of full document text and section outline |
@@ -373,7 +367,9 @@ docker-compose up --build
 | `POST` | `/gdrive/connect` | Authenticate Google Drive via Service Account, OAuth token, API key, gdrive CLI, or Demo |
 | `GET` | `/gdrive/browse` | Browse Google Drive folders and list subfolders/files with breadcrumbs |
 | `POST` | `/gdrive/import` | Download and index a Google Drive file directly into ChromaDB + BM25 |
-| `GET` | `/health` | Service health status, active index chunk count, and catalog count |
+| `GET` | `/classroom/courses` | List enrolled Google Classroom courses |
+| `POST` | `/classroom/import` | Import Google Classroom announcements and coursework materials into RAG |
+| `GET` | `/health` | Service health status, active index chunk count, and database engine status |
 
 ---
 
@@ -388,8 +384,10 @@ The test suite covers:
 - `test_chunker.py`: Canonical section detection, fallback sliding windows, and reference pruning.
 - `test_hybrid_search.py`: BM25 tokenization, dense cosine search, and reciprocal rank fusion.
 - `test_arxiv_collector.py`: Citation enrichment and query parameter formatting.
-- `test_api.py`: Multipart file uploads, document catalog endpoints, lazy text inspection, multi-turn history handling, and source-scoped retrieval.
+- `test_api.py`: Standalone HTML5 UI serving, multipart file uploads, document catalog endpoints, lazy text inspection, and source-scoped retrieval.
 - `test_gdrive.py`: Google Drive connector authentication modes, folder hierarchy browsing, file text extraction, and direct RAG indexing.
+- `test_classroom.py`: Google Classroom stream extraction and ingestion.
+- `test_workspaces.py`: Multi-workspace and conversation thread persistence.
 
 ---
 
@@ -399,40 +397,45 @@ The test suite covers:
 research-rag-system/
 ├── src/
 │   ├── api/
-│   │   ├── main.py              # FastAPI endpoints, upload handler, GDrive & catalog routing
-│   │   └── schemas.py           # Pydantic v2 data models & request/response schemas
+│   │   ├── main.py                  # Unified FastAPI server (REST API + serves frontend/index.html)
+│   │   └── schemas.py               # Pydantic v2 data models & request/response schemas
 │   ├── indexing/
-│   │   ├── document_catalog.py  # Manifest projection pattern & lazy text loader
-│   │   └── vector_store.py      # ChromaDB dense + BM25 sparse hybrid retrieval engine
+│   │   ├── document_catalog.py      # Manifest projection pattern & lazy text loader
+│   │   └── vector_store.py          # ChromaDB dense + BM25 sparse hybrid retrieval engine
 │   ├── ingestion/
-│   │   ├── arxiv_collector.py   # ArXiv search, Semantic Scholar citation enrichment
-│   │   ├── chunker.py           # Academic paper template chunker & section normalizer
-│   │   └── gdrive_connector.py  # Google Drive multi-mode auth, folder browsing & ingestion
+│   │   ├── arxiv_collector.py       # ArXiv search, Semantic Scholar citation enrichment
+│   │   ├── chunker.py               # Academic paper template chunker & section normalizer
+│   │   ├── gdrive_connector.py      # Google Drive multi-mode auth, folder browsing & ingestion
+│   │   └── classroom_connector.py   # Google Classroom course stream & material connector
 │   ├── rag/
-│   │   ├── generator.py         # Multi-provider LLM adapter (Gemini, OpenAI, Qwen, GLM, Ollama, Mock)
-│   │   └── pipeline.py          # HyDE expansion, candidate re-scoring, & history synthesis
+│   │   ├── generator.py             # Multi-provider LLM adapter (Gemini, OpenAI, Qwen, GLM, Ollama, Mock)
+│   │   └── pipeline.py              # HyDE expansion, candidate re-scoring, & history synthesis
+│   ├── storage/
+│   │   └── workspace_store.py       # SQLAlchemy PostgreSQL / SQLite workspace & chat persistence
 │   ├── evals/
-│   │   └── evaluator.py         # Automated RAG Triad benchmarking (Faithfulness, Relevance)
-│   └── config.py                # Centralized environment settings
+│   │   └── evaluator.py             # Automated RAG Triad benchmarking (Faithfulness, Relevance)
+│   └── config.py                    # Centralized environment settings
 ├── frontend/
-│   └── app.py                   # Streamlit NotebookLM-style two-column workbench
-├── tests/                       # Pytest unit & integration test suite (17 tests)
+│   └── index.html                   # Standalone NexusRAG HTML5 + Tailwind CSS + ES6 Workbench (No Streamlit)
+├── tests/                           # Pytest unit & integration test suite
 │   ├── test_api.py
 │   ├── test_arxiv_collector.py
 │   ├── test_chunker.py
+│   ├── test_classroom.py
 │   ├── test_gdrive.py
-│   └── test_hybrid_search.py
+│   ├── test_hybrid_search.py
+│   └── test_workspaces.py
 ├── data/
-│   ├── chroma_db/               # Persistent ChromaDB vector files
-│   ├── documents/               # Disk-backed full text files (lazy loading)
-│   └── manifest.json            # Lightweight metadata manifest
-├── desktop_app.py               # Native desktop window runner (PyWebView + Edge WebView2)
-├── build_desktop.spec           # PyInstaller build specification
-├── build_exe.py                 # Automated compilation script for ResearchRAG.exe
-├── Dockerfile                   # Container build definition
-├── docker-compose.yml           # Multi-container orchestration
-├── requirements.txt             # Pinned project dependencies
-└── README.md                    # Project documentation
+│   ├── chroma_db/                   # Persistent ChromaDB vector files
+│   ├── documents/                   # Disk-backed full text files (lazy loading)
+│   └── manifest.json                # Lightweight metadata manifest
+├── desktop_app.py                   # Native desktop window runner (PyWebView + Edge WebView2)
+├── build_desktop.spec               # PyInstaller build specification
+├── build_exe.py                     # Automated compilation script for ResearchRAG.exe
+├── Dockerfile                       # Container build definition
+├── docker-compose.yml               # Unified container orchestration
+├── requirements.txt                 # Project dependencies
+└── README.md                        # Project documentation
 ```
 
 ---

@@ -10,6 +10,7 @@ from typing import List, Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 from pypdf import PdfReader
 
 from src.config import settings
@@ -47,6 +48,13 @@ from src.api.schemas import (
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
+
+# Resolve frontend UI path (compatible with both dev and PyInstaller frozen bundle)
+import sys
+if getattr(sys, "frozen", False):
+    FRONTEND_DIR = Path(sys._MEIPASS) / "frontend"
+else:
+    FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
 # State containers
 vector_store = None
@@ -107,9 +115,9 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down application...")
 
 app = FastAPI(
-    title="Research RAG Intelligence System",
-    description="End-to-End ArXiv Paper Ingestion, Semantic Retrieval, and Automated RAG Evaluation API",
-    version="1.0.0",
+    title="NexusRAG Research Intelligence System",
+    description="End-to-End ArXiv Paper Ingestion, Hybrid Semantic Retrieval, and Automated RAG Evaluation Studio",
+    version="2.5.0",
     lifespan=lifespan
 )
 
@@ -121,10 +129,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/", summary="Root endpoint")
-def root():
+@app.get("/", include_in_schema=False)
+@app.get("/ui", include_in_schema=False)
+def serve_workbench_ui():
+    """Serve the standalone NexusRAG HTML5 Research Workbench."""
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file, media_type="text/html")
+    return HTMLResponse(
+        content="<h1>NexusRAG Workbench</h1><p>Frontend index.html not found.</p>",
+        status_code=404
+    )
+
+@app.get("/api/info", summary="API metadata endpoint")
+def api_info():
     return {
-        "message": "Research RAG Intelligence System is online.",
+        "message": "NexusRAG Research Intelligence System is online.",
+        "ui": "/",
         "documentation": "/docs",
         "health": "/health"
     }
