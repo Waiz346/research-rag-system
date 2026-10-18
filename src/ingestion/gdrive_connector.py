@@ -1,14 +1,14 @@
-"""Google Drive Connector for Research RAG Intelligence System.
+"""Google Drive Connector for the RAG system.
 
 Enables browsing Google Drive folders, inspecting file metadata,
-and directly importing/indexing PDFs, Docs, and text files into ChromaDB + BM25.
+and importing/indexing PDFs, Docs, and text files into ChromaDB + BM25.
 
 Supports multiple authentication modes:
-1. Service Account JSON credentials (enterprise/production)
+1. Service Account JSON credentials
 2. OAuth 2.0 Access Token
 3. Google Cloud API Key (for public/shared folders)
 4. Local `gdrive` CLI bridge
-5. Interactive Demo Mode (pre-populated with canonical research papers)
+5. Demo Mode (pre-populated with sample research papers)
 """
 import io
 import os
