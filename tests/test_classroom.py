@@ -172,6 +172,7 @@ def test_classroom_import_announcement_text_into_rag():
     assert data["status"] == "success"
     assert "doc_id" in data
     assert data["chunks_indexed"] >= 1
+    client.delete(f"/documents/{data['doc_id']}")
 
 
 def test_classroom_batch_import_mocked():
@@ -211,3 +212,6 @@ def test_classroom_batch_import_mocked():
         assert data["total_requested"] == 2
         assert data["total_succeeded"] == 2
         assert len(data["imported_docs"]) == 2
+        for d in data["imported_docs"]:
+            client.delete(f"/documents/{d['doc_id']}")
+

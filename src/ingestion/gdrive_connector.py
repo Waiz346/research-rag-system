@@ -926,6 +926,7 @@ class GoogleDriveConnector:
         # 2. Live API
         if self.service is not None:
             try:
+                from src.ingestion.universal_parser import parse_any_file, parse_csv_bytes
                 meta = self.service.files().get(
                     fileId=file_id,
                     fields="id, name, mimeType"
@@ -934,23 +935,20 @@ class GoogleDriveConnector:
                 mime = meta.get("mimeType", "")
 
                 text_content = ""
-                # Google Doc: Export as Plain Text
-                if mime == MIME_DOC:
+                # Google Doc or Google Slides: Export as Plain Text
+                if mime in (MIME_DOC, "application/vnd.google-apps.presentation"):
                     export_req = self.service.files().export_media(fileId=file_id, mimeType="text/plain")
                     text_content = export_req.execute().decode("utf-8", errors="replace")
-                # PDF: Download binary and extract with pypdf
-                elif mime == MIME_PDF or name.lower().endswith(".pdf"):
-                    from pypdf import PdfReader
-                    get_req = self.service.files().get_media(fileId=file_id)
-                    pdf_bytes = get_req.execute()
-                    reader = PdfReader(io.BytesIO(pdf_bytes))
-                    extracted = [p.extract_text() for p in reader.pages if p.extract_text()]
-                    text_content = "\n\n".join(extracted)
-                # Plain Text / Markdown: Download directly
+                # Google Sheets: Export as CSV and convert to Markdown table
+                elif mime == "application/vnd.google-apps.spreadsheet":
+                    export_req = self.service.files().export_media(fileId=file_id, mimeType="text/csv")
+                    csv_bytes = export_req.execute()
+                    text_content = parse_csv_bytes(csv_bytes, delimiter=",")
+                # All binary/office/PDF/code/text formats: parse via universal_parser
                 else:
                     get_req = self.service.files().get_media(fileId=file_id)
                     raw_bytes = get_req.execute()
-                    text_content = raw_bytes.decode("utf-8", errors="replace")
+                    text_content, _ = parse_any_file(name, raw_bytes, mime_type=mime)
 
                 return (name, text_content, mime)
             except Exception as e:

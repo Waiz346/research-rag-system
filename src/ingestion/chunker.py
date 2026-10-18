@@ -13,14 +13,30 @@ from src.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Canonical scientific paper section regex matching patterns
+# Canonical scientific paper & everyday coursework section regex matching patterns
 SECTION_REGEX = re.compile(
-    r"(?im)^(?:\s*(?:[0-9IVXLCDM]+\.?\s+)?(Abstract|Introduction|Related\s+Work|Background|Methodology|Method|Approach|Architecture|System\s+Model|Model|Experiments?|Experimental\s+Setup|Results|Evaluation|Discussion|Ablation(?:\s+Studies?)?|Conclusions?|Future\s+Work|References|Bibliography)(?:\s*[:\n\r]|\s*$))"
+    r"(?im)^(?:\s*(?:[0-9IVXLCDM]+\.?\s+)?(Abstract|Introduction|Overview|Executive\s+Summary|Summary|Key\s+Takeaways|Syllabus|Course\s+Schedule|Schedule|Grading(?:\s+Policy)?|Assignments?|Requirements|Deliverables|Related\s+Work|Background|Methodology|Method|Approach|Architecture|System\s+Model|Model|Experiments?|Experimental\s+Setup|Results|Evaluation|Discussion|Ablation(?:\s+Studies?)?|Conclusions?|Future\s+Work|Transcript|References|Bibliography)(?:\s*[:\n\r]|\s*$))"
 )
+
+PAGE_MARKER_REGEX = re.compile(r"(?:\[|#{1,3}\s*|\b)(Page|Slide)\s+(\d+)\b", re.IGNORECASE)
 
 # Canonical normalization map
 SECTION_CANONICAL_MAP = {
     "abstract": "Abstract",
+    "executive summary": "Overview",
+    "overview": "Overview",
+    "summary": "Summary",
+    "key takeaways": "Summary",
+    "syllabus": "Syllabus",
+    "course schedule": "Schedule",
+    "schedule": "Schedule",
+    "grading": "Grading",
+    "grading policy": "Grading",
+    "assignment": "Assignments",
+    "assignments": "Assignments",
+    "requirements": "Requirements",
+    "deliverables": "Requirements",
+    "transcript": "Transcript",
     "introduction": "Introduction",
     "related work": "Related Work",
     "background": "Related Work",
@@ -135,6 +151,17 @@ class DocumentChunker:
                 return val
         return raw_name.title()
 
+    @staticmethod
+    def _detect_location_meta(text: str, active_page: int = 0, active_label: str = "") -> Tuple[int, str]:
+        """Detect [Page N] or [Slide N] marker in text and return updated (page_num, label)."""
+        matches = list(PAGE_MARKER_REGEX.finditer(text))
+        if matches:
+            last_m = matches[-1]
+            kind = last_m.group(1).title()
+            num = int(last_m.group(2))
+            return num, f"{kind} {num}"
+        return active_page, active_label
+
     def _chunk_sections(
         self,
         sections: List[Tuple[str, str]],
@@ -145,6 +172,8 @@ class DocumentChunker:
         all_chunks: List[TextChunk] = []
         doc_id = base_metadata.get("doc_id", "doc")
         global_chunk_idx = 0
+        active_page = 0
+        active_label = ""
 
         for sec_name, sec_text in sections:
             is_ref = (sec_name == "References")
@@ -155,6 +184,8 @@ class DocumentChunker:
             cleaned = re.sub(r"\s+", " ", sec_text).strip()
             if not cleaned:
                 continue
+
+            active_page, active_label = self._detect_location_meta(cleaned, active_page, active_label)
 
             # If section is reasonably sized (e.g., Abstract or Short Summary), keep as 1 atomic chunk
             if len(cleaned) <= int(self.chunk_size * 1.3):
@@ -167,6 +198,9 @@ class DocumentChunker:
                     "start_char": 0,
                     "end_char": len(cleaned),
                 }
+                if active_page > 0:
+                    meta["page_number"] = active_page
+                    meta["location_label"] = active_label
                 meta = self._clean_metadata(meta)
                 # Prefix with section tag for semantic clarity in LLM & retrieval
                 tagged_text = f"[{sec_name}] {cleaned}" if not cleaned.startswith(f"[{sec_name}]") else cleaned
@@ -183,7 +217,9 @@ class DocumentChunker:
                     cleaned,
                     base_metadata,
                     section_name=sec_name,
-                    start_index=global_chunk_idx
+                    start_index=global_chunk_idx,
+                    initial_page=active_page,
+                    initial_label=active_label
                 )
                 all_chunks.extend(sec_chunks)
                 global_chunk_idx += len(sec_chunks)
@@ -195,9 +231,11 @@ class DocumentChunker:
         text: str,
         base_metadata: Dict[str, Any],
         section_name: str = "General",
-        start_index: int = 0
+        start_index: int = 0,
+        initial_page: int = 0,
+        initial_label: str = ""
     ) -> List[TextChunk]:
-        """Split text via sliding window with sentence snapping."""
+        """Split text via sliding window with sentence snapping and page/slide tracking."""
         cleaned_text = re.sub(r"\s+", " ", text).strip()
         if not cleaned_text:
             return []
@@ -207,7 +245,9 @@ class DocumentChunker:
         start = 0
         chunk_idx = start_index
         doc_id = base_metadata.get("doc_id", "doc")
-        sec_slug = section_name.lower().replace(" ", "_")
+        sec_slug = re.sub(r"[^a-z0-9_]", "_", section_name.lower())
+        active_page = initial_page
+        active_label = initial_label
 
         while start < len(cleaned_text):
             end = min(start + self.chunk_size, len(cleaned_text))
@@ -220,6 +260,7 @@ class DocumentChunker:
 
             chunk_content = cleaned_text[start:end].strip()
             if chunk_content:
+                active_page, active_label = self._detect_location_meta(chunk_content, active_page, active_label)
                 meta = {
                     **base_metadata,
                     "section": section_name,
@@ -228,6 +269,9 @@ class DocumentChunker:
                     "end_char": end,
                     "is_reference": (section_name == "References")
                 }
+                if active_page > 0:
+                    meta["page_number"] = active_page
+                    meta["location_label"] = active_label
                 meta = self._clean_metadata(meta)
                 if section_name == "General":
                     chunk_id = f"{doc_id}_chunk_{chunk_idx}"

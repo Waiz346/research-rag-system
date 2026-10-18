@@ -377,6 +377,64 @@ class VectorStoreManager:
             logger.error(f"Error deleting chunks for doc_id='{doc_id}': {e}")
             return False
 
+    def expand_chunk_context(self, chunk_id: str, max_extra_chars: int = 450) -> str:
+        """Expand a retrieved chunk with adjacent neighbor context (chunk i-1 and i+1) from the same document."""
+        base_entry = self.bm25_docs.get(chunk_id)
+        if not base_entry:
+            return ""
+        base_text = base_entry.get("text", "")
+        meta = base_entry.get("metadata") or {}
+        doc_id = meta.get("doc_id")
+        if not doc_id:
+            return base_text
+
+        # Parse trailing chunk number if formatted as {doc_id}_chunk_{idx}
+        m = re.match(r"^(.+)_chunk_(\d+)$", chunk_id)
+        if not m:
+            return base_text
+
+        prefix = m.group(1)
+        idx = int(m.group(2))
+        prev_id = f"{prefix}_chunk_{idx - 1}"
+        next_id = f"{prefix}_chunk_{idx + 1}"
+
+        parts: List[str] = []
+        if idx > 0 and prev_id in self.bm25_docs:
+            prev_text = (self.bm25_docs[prev_id].get("text") or "").strip()
+            if prev_text:
+                parts.append("..." + prev_text[-max_extra_chars:])
+
+        parts.append(base_text.strip())
+
+        if next_id in self.bm25_docs:
+            next_text = (self.bm25_docs[next_id].get("text") or "").strip()
+            if next_text:
+                parts.append(next_text[:max_extra_chars] + "...")
+
+        return "\n".join(parts)
+
+    def get_active_sources_overview(self, doc_ids: Optional[List[str]] = None, max_sources: int = 8) -> List[Dict[str, Any]]:
+        """Build a compact NotebookLM-style overview of active documents in the index."""
+        docs_seen: Dict[str, Dict[str, Any]] = {}
+        for cid, entry in self.bm25_docs.items():
+            meta = entry.get("metadata") or {}
+            d_id = meta.get("doc_id")
+            if not d_id:
+                continue
+            if doc_ids and d_id not in doc_ids:
+                continue
+            if d_id not in docs_seen:
+                first_text = re.sub(r"\s+", " ", (entry.get("text") or "")).strip()
+                docs_seen[d_id] = {
+                    "doc_id": d_id,
+                    "title": meta.get("title", d_id),
+                    "authors": meta.get("authors", "Unknown"),
+                    "overview": first_text[:220] + ("..." if len(first_text) > 220 else "")
+                }
+            if len(docs_seen) >= max_sources:
+                break
+        return list(docs_seen.values())
+
     def count(self) -> int:
         """Return total indexed items in collection."""
         return self.collection.count()

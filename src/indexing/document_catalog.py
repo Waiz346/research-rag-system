@@ -31,11 +31,64 @@ class DocumentSummary:
     sections: List[str] = field(default_factory=list)
     created_at: str = ""
     char_count: int = 0
+    summary: str = ""
+    key_topics: List[str] = field(default_factory=list)
+    suggested_questions: List[str] = field(default_factory=list)
 
 @dataclass
 class DocumentDetail:
     summary: DocumentSummary
     full_text: str
+
+
+def _extract_source_guide(title: str, full_text: str, sections: List[str]) -> Dict[str, Any]:
+    """Extract a concise NotebookLM-style Source Guide (summary, key_topics, suggested_questions) from document text."""
+    import re
+    clean_text = re.sub(r"\s+", " ", (full_text or "")).strip()
+
+    # 1. Extract summary (prefer Abstract or opening 2-3 substantive sentences)
+    summary = ""
+    if clean_text:
+        abs_match = re.search(r"(?:abstract|summary)[:\s—-]+(.{80,550}?)(?:\s+\d+\.\s+|\s+introduction|\Z)", clean_text, re.IGNORECASE)
+        raw_excerpt = abs_match.group(1).strip() if abs_match else clean_text[:500]
+        # Trim to sentence boundary if possible
+        sentences = re.split(r"(?<=[.!?])\s+", raw_excerpt)
+        summary = " ".join(sentences[:3]).strip()
+        if len(summary) > 420:
+            summary = summary[:417].rsplit(" ", 1)[0] + "..."
+    if not summary:
+        summary = f"Indexed source covering {title}."
+
+    # 2. Extract key topics from title and capitalized technical phrases
+    stop = {
+        "the", "and", "for", "with", "from", "using", "via", "based", "into", "over", "under",
+        "study", "paper", "model", "models", "method", "methods", "approach", "system", "analysis",
+        "general", "abstract", "introduction", "conclusion", "references", "methodology", "experiments"
+    }
+    words = re.findall(r"[A-Za-z][A-Za-z0-9\-]{2,}", f"{title} {' '.join(sections or [])} {summary[:250]}")
+    topics: List[str] = []
+    seen_lower = set()
+    for w in words:
+        wl = w.lower()
+        if wl not in stop and wl not in seen_lower and len(w) >= 4:
+            seen_lower.add(wl)
+            topics.append(w)
+        if len(topics) >= 6:
+            break
+
+    # 3. Build 3 source-specific suggested questions
+    short_title = title[:65] + ("..." if len(title) > 65 else "")
+    suggested_questions = [
+        f"What are the core contributions and main findings of \"{short_title}\"?",
+        f"What methodology or architecture is proposed in \"{short_title}\"?",
+        f"What experimental results or limitations are discussed in \"{short_title}\"?"
+    ]
+    return {
+        "summary": summary,
+        "key_topics": topics,
+        "suggested_questions": suggested_questions
+    }
+
 
 class DocumentCatalog:
     """Manages paper metadata catalog and lazy full-text retrieval on disk."""
@@ -65,14 +118,37 @@ class DocumentCatalog:
             json.dump(data, f, indent=2)
         temp_file.replace(self.manifest_file)
 
-    def list_documents(self) -> List[DocumentSummary]:
-        """Return lightweight metadata summaries for all papers.
+    def _enrich_item_guide(self, doc_id: str, item: Dict[str, Any]) -> Dict[str, Any]:
+        """Ensure a manifest item has summary, key_topics, and suggested_questions."""
+        if item.get("summary") and item.get("key_topics") and item.get("suggested_questions"):
+            return item
+        text_file = self.storage_dir / f"{doc_id}.txt"
+        sample_text = ""
+        if text_file.exists():
+            try:
+                with open(text_file, "r", encoding="utf-8", errors="replace") as f:
+                    sample_text = f.read(2500)
+            except Exception:
+                sample_text = ""
+        guide = _extract_source_guide(
+            title=item.get("title", doc_id),
+            full_text=sample_text,
+            sections=item.get("sections", [])
+        )
+        item["summary"] = guide["summary"]
+        item["key_topics"] = guide["key_topics"]
+        item["suggested_questions"] = guide["suggested_questions"]
+        return item
 
-        Zero heavy memory consumption: does not load document texts or vector embeddings into RAM.
-        """
+    def list_documents(self) -> List[DocumentSummary]:
+        """Return lightweight metadata summaries (including Source Guides) for all papers."""
         manifest = self._load_manifest()
         summaries: List[DocumentSummary] = []
+        dirty = False
         for doc_id, item in manifest.items():
+            if not item.get("summary"):
+                self._enrich_item_guide(doc_id, item)
+                dirty = True
             summaries.append(DocumentSummary(
                 doc_id=doc_id,
                 title=item.get("title", doc_id),
@@ -83,8 +159,13 @@ class DocumentCatalog:
                 chunk_count=int(item.get("chunk_count", 0)),
                 sections=item.get("sections", []),
                 created_at=item.get("created_at", ""),
-                char_count=int(item.get("char_count", 0))
+                char_count=int(item.get("char_count", 0)),
+                summary=item.get("summary", ""),
+                key_topics=item.get("key_topics", []),
+                suggested_questions=item.get("suggested_questions", [])
             ))
+        if dirty:
+            self._save_manifest(manifest)
         # Sort by creation date descending
         summaries.sort(key=lambda s: s.created_at, reverse=True)
         return summaries
@@ -105,6 +186,11 @@ class DocumentCatalog:
             except Exception as e:
                 logger.error(f"Error reading document text file for {doc_id}: {e}")
 
+        if not item.get("summary"):
+            guide = _extract_source_guide(item.get("title", doc_id), full_text[:3000], item.get("sections", []))
+            item.update(guide)
+            self._save_manifest(manifest)
+
         summary = DocumentSummary(
             doc_id=doc_id,
             title=item.get("title", doc_id),
@@ -115,7 +201,10 @@ class DocumentCatalog:
             chunk_count=int(item.get("chunk_count", 0)),
             sections=item.get("sections", []),
             created_at=item.get("created_at", ""),
-            char_count=len(full_text)
+            char_count=len(full_text),
+            summary=item.get("summary", ""),
+            key_topics=item.get("key_topics", []),
+            suggested_questions=item.get("suggested_questions", [])
         )
         return DocumentDetail(summary=summary, full_text=full_text)
 
@@ -131,13 +220,17 @@ class DocumentCatalog:
         chunk_count: int = 0,
         sections: Optional[List[str]] = None
     ) -> DocumentSummary:
-        """Save document text to disk and record metadata in lightweight manifest."""
+        """Save document text to disk and record metadata + Source Guide in lightweight manifest."""
         # 1. Save full text file to disk
         text_file = self.storage_dir / f"{doc_id}.txt"
         with open(text_file, "w", encoding="utf-8", errors="replace") as f:
             f.write(full_text)
 
-        # 2. Update manifest
+        # 2. Extract NotebookLM-style Source Guide
+        dedup_sections = list(dict.fromkeys(sections or ["General"]))
+        guide = _extract_source_guide(title=title, full_text=full_text[:3500], sections=dedup_sections)
+
+        # 3. Update manifest
         manifest = self._load_manifest()
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -149,9 +242,12 @@ class DocumentCatalog:
             "authors": authors,
             "citation_count": citation_count,
             "chunk_count": chunk_count,
-            "sections": list(dict.fromkeys(sections or ["General"])),
+            "sections": dedup_sections,
             "created_at": now_str,
-            "char_count": len(full_text)
+            "char_count": len(full_text),
+            "summary": guide["summary"],
+            "key_topics": guide["key_topics"],
+            "suggested_questions": guide["suggested_questions"]
         }
         self._save_manifest(manifest)
         logger.info(f"Registered document '{doc_id}' in catalog ({len(full_text)} chars, {chunk_count} chunks).")
@@ -164,9 +260,12 @@ class DocumentCatalog:
             authors=authors,
             citation_count=citation_count,
             chunk_count=chunk_count,
-            sections=list(dict.fromkeys(sections or ["General"])),
+            sections=dedup_sections,
             created_at=now_str,
-            char_count=len(full_text)
+            char_count=len(full_text),
+            summary=guide["summary"],
+            key_topics=guide["key_topics"],
+            suggested_questions=guide["suggested_questions"]
         )
 
     def delete_document(self, doc_id: str) -> bool:

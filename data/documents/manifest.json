@@ -11,7 +11,21 @@
       "Abstract"
     ],
     "created_at": "2026-10-13 12:17:23",
-    "char_count": 1552
+    "char_count": 1552,
+    "summary": "Title: AR-RAG: Autoregressive Retrieval Augmentation for Image Generation Authors: Jingyuan Qi, Zhiyang Xu, Qifan Wang, Lifu Huang Citations: 0 Abstract: We introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike prior methods that perform a single, static retrieval before...",
+    "key_topics": [
+      "AR-RAG",
+      "Autoregressive",
+      "Retrieval",
+      "Augmentation",
+      "Image",
+      "Generation"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"AR-RAG: Autoregressive Retrieval Augmentation for Image Generatio...\"?",
+      "What methodology or architecture is proposed in \"AR-RAG: Autoregressive Retrieval Augmentation for Image Generatio...\"?",
+      "What experimental results or limitations are discussed in \"AR-RAG: Autoregressive Retrieval Augmentation for Image Generatio...\"?"
+    ]
   },
   "2504.13684v1": {
     "doc_id": "2504.13684v1",
@@ -25,7 +39,21 @@
       "Abstract"
     ],
     "created_at": "2026-10-13 12:17:23",
-    "char_count": 1307
+    "char_count": 1307,
+    "summary": "Title: Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation Authors: Xiangrong, Zhu, Yuan Xu, Tianjian Liu, Jingwei Sun, Yu Zhang, Xin Tong Citations: 0 Abstract: Human cognition is constrained by processing limitations, leading to cognitive overload and inefficiencies in knowledge synthesis and decision-making. Large Language Models (LLMs) present an opportunity for cognitive augmentation,...",
+    "key_topics": [
+      "Intelligent",
+      "Interaction",
+      "Strategies",
+      "Context-Aware",
+      "Cognitive",
+      "Augmentation"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Intelligent Interaction Strategies for Context-Aware Cognitive Au...\"?",
+      "What methodology or architecture is proposed in \"Intelligent Interaction Strategies for Context-Aware Cognitive Au...\"?",
+      "What experimental results or limitations are discussed in \"Intelligent Interaction Strategies for Context-Aware Cognitive Au...\"?"
+    ]
   },
   "2005.11401v4": {
     "doc_id": "2005.11401v4",
@@ -43,7 +71,21 @@
       "Discussion"
     ],
     "created_at": "2026-10-13 12:35:16",
-    "char_count": 71024
+    "char_count": 71024,
+    "summary": "Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when \ufb01ne-tuned on down- stream NLP tasks. However, their abili",
+    "key_topics": [
+      "Retrieval-Augmented",
+      "Generation",
+      "Knowledge-Intensive",
+      "Tasks",
+      "Related",
+      "Work"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\"?",
+      "What methodology or architecture is proposed in \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\"?",
+      "What experimental results or limitations are discussed in \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\"?"
+    ]
   },
   "2005.11401": {
     "doc_id": "2005.11401",
@@ -61,7 +103,21 @@
       "Experiments"
     ],
     "created_at": "2026-10-13 12:50:00",
-    "char_count": 1400
+    "char_count": 1400,
+    "summary": "Large language models demonstrate remarkable abilities, but suffer from hallucinations and knowledge staleness. We introduce RAG architectures combining parametric seq2seq models with non-parametric dense retrieval (DPR) over Wikipedia. ##",
+    "key_topics": [
+      "Retrieval-Augmented",
+      "Generation",
+      "Knowledge-Intensive",
+      "Tasks",
+      "Large",
+      "language"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Retrieval-Augmented Generation for Knowledge-Intensive Tasks\"?",
+      "What methodology or architecture is proposed in \"Retrieval-Augmented Generation for Knowledge-Intensive Tasks\"?",
+      "What experimental results or limitations are discussed in \"Retrieval-Augmented Generation for Knowledge-Intensive Tasks\"?"
+    ]
   },
   "2310.11511": {
     "doc_id": "2310.11511",
@@ -79,48 +135,20 @@
       "Experiments"
     ],
     "created_at": "2026-10-13 12:50:00",
-    "char_count": 1254
-  },
-  "class_CS4000_Midterm_Announcement_1791897399": {
-    "doc_id": "class_CS4000_Midterm_Announcement_1791897399",
-    "title": "CS4000 Midterm Announcement",
-    "source_type": "classroom",
-    "filename": "CS4000 Midterm Announcement.txt",
-    "authors": "Google Classroom (CS4000 Advanced AI)",
-    "citation_count": 0,
-    "chunk_count": 1,
-    "sections": [
-      "Cs4000 Midterm Announcement"
+    "char_count": 1254,
+    "summary": "Despite the promise of retrieval-augmented generation (RAG), indiscriminately retrieving passages introduces noise and degradation. We propose Self-RAG, a framework where a single model learns to dynamically decide when to retrieve, evaluate retrieved relevance, and critique its own generations using special reflection tokens. ##",
+    "key_topics": [
+      "Self-RAG",
+      "Learning",
+      "Retrieve",
+      "Generate",
+      "Critique",
+      "through"
     ],
-    "created_at": "2026-10-13 21:16:42",
-    "char_count": 132
-  },
-  "class_lecture_01_1791897402": {
-    "doc_id": "class_lecture_01_1791897402",
-    "title": "Lecture 01 Notes.pdf",
-    "source_type": "classroom",
-    "filename": "lecture_01.pdf",
-    "authors": "Google Classroom (ML Research)",
-    "citation_count": 0,
-    "chunk_count": 1,
-    "sections": [
-      "General"
-    ],
-    "created_at": "2026-10-13 21:16:43",
-    "char_count": 72
-  },
-  "class_lecture_01_1791897403": {
-    "doc_id": "class_lecture_01_1791897403",
-    "title": "Project Guideline Notice",
-    "source_type": "classroom",
-    "filename": "lecture_01.pdf",
-    "authors": "Google Classroom (ML Research)",
-    "citation_count": 0,
-    "chunk_count": 1,
-    "sections": [
-      "General"
-    ],
-    "created_at": "2026-10-13 21:16:44",
-    "char_count": 72
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Self-RAG: Learning to Retrieve, Generate, and Critique through Se...\"?",
+      "What methodology or architecture is proposed in \"Self-RAG: Learning to Retrieve, Generate, and Critique through Se...\"?",
+      "What experimental results or limitations are discussed in \"Self-RAG: Learning to Retrieve, Generate, and Critique through Se...\"?"
+    ]
   }
 }

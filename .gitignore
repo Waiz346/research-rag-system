@@ -19,6 +19,7 @@ data/gdrive_accounts/
 data/classroom_accounts/
 data/classroom_oauth_config.json
 data/tokens/
+data/llm_config.json
 **/gdrive_accounts/
 **/classroom_accounts/
 

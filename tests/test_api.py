@@ -47,6 +47,7 @@ def test_evaluate_endpoint():
     assert "composite_score" in data
 
 def test_dynamic_llm_config_switching():
+    from src.config import settings
     # Switch to Qwen
     res = client.post(
         "/config/llm",
@@ -65,6 +66,16 @@ def test_dynamic_llm_config_switching():
     test_data = test_res.json()
     assert test_data["success"] is True
     assert test_data["provider"] == "mock"
+
+    # Restore configured .env provider (e.g. Gemini)
+    client.post(
+        "/config/llm",
+        json={
+            "provider": settings.LLM_PROVIDER,
+            "model_name": settings.GEMINI_MODEL if settings.LLM_PROVIDER == "gemini" else None,
+            "api_key": settings.GEMINI_API_KEY if settings.LLM_PROVIDER == "gemini" else None,
+        }
+    )
 
 def test_query_hybrid_and_threshold_cutoffs():
     # 1. Query with hybrid mode and normal threshold

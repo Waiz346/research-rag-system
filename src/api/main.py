@@ -1,5 +1,6 @@
 """FastAPI entry point for the Research RAG Intelligence system."""
 import io
+import json
 import re
 import time
 import logging
@@ -10,16 +11,23 @@ from typing import List, Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from pypdf import PdfReader
 
 from src.config import settings
 from src.ingestion.arxiv_collector import ArxivCollector
 from src.ingestion.chunker import DocumentChunker
+from src.ingestion.universal_parser import (
+    SUPPORTED_UPLOAD_EXTENSIONS,
+    compute_deterministic_doc_id,
+    parse_any_file,
+    extract_from_url
+)
 from src.indexing.vector_store import VectorStoreManager
-from src.indexing.document_catalog import DocumentCatalog
+from src.indexing.document_catalog import DocumentCatalog, _extract_source_guide
 from src.rag.pipeline import RAGPipeline
 from src.rag.generator import LLMGenerator
+from src.rag.studio_tools import generate_studio_artifact, format_markdown_export, generate_notebook_guide
 from src.evals.evaluator import RAGEvaluator
 from src.ingestion.gdrive_connector import get_gdrive_connector
 from src.ingestion.classroom_connector import get_classroom_connector, save_oauth_credentials
@@ -43,7 +51,10 @@ from src.api.schemas import (
     ClassroomCourseworkMaterialItem, ClassroomCourseworkItem, ClassroomMaterialItem,
     ClassroomImportRequest, ClassroomImportResponse, ClassroomBatchImportRequest,
     ClassroomBatchImportResponse, ClassroomAccountsResponse, ClassroomAccountInfo,
-    ClassroomSwitchAccountRequest, ClassroomLoginStatusResponse
+    ClassroomSwitchAccountRequest, ClassroomLoginStatusResponse,
+    UrlIngestRequest, NoteIngestRequest, DeduplicateResponse,
+    StudioGenerateRequest, StudioGenerateResponse,
+    MarkdownExportRequest, MarkdownExportResponse, NotebookGuideResponse
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -293,86 +304,115 @@ def ingest_papers(req: IngestRequest):
         logger.error(f"Error during ingestion: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/documents/upload", response_model=UploadResponse, summary="Upload custom PDF, TXT, or Markdown document")
+def _index_and_register_document(
+    doc_id: str,
+    workspace_id: str,
+    title: str,
+    text_content: str,
+    source_type: str,
+    filename: str,
+    authors: str = "User Upload",
+    pdf_url: str = "",
+    section_aware: bool = True,
+    exclude_references: bool = True
+) -> tuple[int, List[str]]:
+    """Index document chunks (replacing any prior chunks for the same doc_id) and register in DB + catalog."""
+    chunker = DocumentChunker()
+    base_meta = {
+        "doc_id": doc_id,
+        "workspace_id": workspace_id,
+        "title": title,
+        "authors": authors,
+        "published": datetime.now().strftime("%Y-%m-%d"),
+        "pdf_url": pdf_url,
+        "citation_count": 0,
+        "source_type": source_type
+    }
+    chunks = chunker.split_text(
+        text_content,
+        base_metadata=base_meta,
+        section_aware=section_aware,
+        exclude_references=exclude_references
+    )
+    store = get_vector_store()
+    # Clean up old chunks if re-indexing the same deterministic doc_id
+    store.delete_by_doc_id(doc_id)
+    indexed_count = store.add_chunks(chunks)
+    sections = [c.section for c in chunks]
+
+    ws_store = get_workspace_store_instance()
+    ws_store.register_document(
+        doc_id=doc_id,
+        workspace_id=workspace_id,
+        title=title,
+        full_text=text_content,
+        source_type=source_type,
+        filename=filename,
+        authors=authors,
+        citation_count=0,
+        chunk_count=len(chunks),
+        sections=sections
+    )
+
+    catalog = get_document_catalog()
+    catalog.register_document(
+        doc_id=doc_id,
+        title=title,
+        full_text=text_content,
+        source_type=source_type,
+        filename=filename,
+        authors=authors,
+        citation_count=0,
+        chunk_count=len(chunks),
+        sections=sections
+    )
+    return indexed_count, sections
+
+
+@app.post("/documents/upload", response_model=UploadResponse, summary="Upload PDF, Office (.docx/.pptx/.xlsx), Data (.csv/.ipynb), Code, Image, or Text document")
 async def upload_document(
     file: UploadFile = File(...),
     workspace_id: str = Form("default")
 ):
-    """Upload and index user files directly into the online database under a workspace."""
+    """Upload and index everyday user files directly into the online database under a workspace."""
     try:
         filename = file.filename or "uploaded_document.txt"
         ext = Path(filename).suffix.lower()
-        if ext not in [".pdf", ".txt", ".md"]:
-            raise HTTPException(status_code=400, detail="Only .pdf, .txt, and .md files are supported.")
+        if ext and ext not in SUPPORTED_UPLOAD_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported file format '{ext}'. Supported formats: {', '.join( sorted(SUPPORTED_UPLOAD_EXTENSIONS) )}"
+            )
 
         contents = await file.read()
-        text_content = ""
-        if ext == ".pdf":
-            try:
-                reader = PdfReader(io.BytesIO(contents))
-                extracted = []
-                for page in reader.pages:
-                    txt = page.extract_text()
-                    if txt:
-                        extracted.append(txt)
-                text_content = "\n\n".join(extracted)
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Failed to extract text from PDF: {e}")
-        else:
-            text_content = contents.decode("utf-8", errors="replace")
+        gen = get_generator()
+        try:
+            text_content, source_type = parse_any_file(
+                filename=filename,
+                raw_bytes=contents,
+                mime_type=file.content_type or "",
+                vision_ocr_fn=gen.extract_vision_text
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to parse {filename}: {e}")
 
         if not text_content.strip():
             raise HTTPException(status_code=400, detail="Uploaded file is empty or contains no extractable text.")
 
         raw_stem = Path(filename).stem
-        clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
-        doc_id = f"doc_{clean_stem}_{int(time.time())}"
-        title = raw_stem.replace("_", " ").title()
+        title = raw_stem.replace("_", " ").replace("-", " ").strip().title() or filename
+        doc_id = compute_deterministic_doc_id("doc", filename, text_content)
 
-        chunker = DocumentChunker()
-        base_meta = {
-            "doc_id": doc_id,
-            "workspace_id": workspace_id,
-            "title": title,
-            "authors": "User Upload",
-            "published": datetime.now().strftime("%Y-%m-%d"),
-            "pdf_url": "",
-            "citation_count": 0,
-            "source_type": ext.lstrip(".")
-        }
-
-        chunks = chunker.split_text(text_content, base_metadata=base_meta, section_aware=True, exclude_references=True)
-        store = get_vector_store()
-        indexed_count = store.add_chunks(chunks)
-
-        sections = [c.section for c in chunks]
-
-        # Register in online database
-        ws_store = get_workspace_store_instance()
-        ws_store.register_document(
+        indexed_count, sections = _index_and_register_document(
             doc_id=doc_id,
             workspace_id=workspace_id,
             title=title,
-            full_text=text_content,
-            source_type=ext.lstrip("."),
+            text_content=text_content,
+            source_type=source_type,
             filename=filename,
             authors="User Upload",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
-        )
-
-        catalog = get_document_catalog()
-        catalog.register_document(
-            doc_id=doc_id,
-            title=title,
-            full_text=text_content,
-            source_type=ext.lstrip("."),
-            filename=filename,
-            authors="User Upload",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
+            section_aware=True,
+            exclude_references=(source_type in {"pdf", "docx"})
         )
 
         return UploadResponse(
@@ -380,7 +420,7 @@ async def upload_document(
             doc_id=doc_id,
             title=title,
             chunks_indexed=indexed_count,
-            total_in_index=store.count(),
+            total_in_index=get_vector_store().count(),
             sections=list(dict.fromkeys(sections)),
             char_count=len(text_content)
         )
@@ -390,25 +430,230 @@ async def upload_document(
         logger.error(f"Error processing uploaded file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/documents/ingest-url", response_model=UploadResponse, summary="Ingest Web Article, YouTube Video Transcript, or PDF URL")
+def ingest_url_document(req: UrlIngestRequest):
+    """Fetch and index a web page article, YouTube transcript, or direct PDF link."""
+    try:
+        gen = get_generator()
+        try:
+            auto_title, text_content, source_type = extract_from_url(
+                req.url,
+                vision_ocr_fn=gen.extract_vision_text
+            )
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+
+        if not text_content or not text_content.strip():
+            raise HTTPException(status_code=400, detail="Could not extract readable content from URL.")
+
+        title = (req.title or auto_title or req.url).strip()
+        workspace_id = req.workspace_id or "default"
+        doc_id = compute_deterministic_doc_id(source_type, req.url, req.url)
+        filename = f"{re.sub(r'[^a-zA-Z0-9_-]', '_', title)[:50]}.md"
+
+        indexed_count, sections = _index_and_register_document(
+            doc_id=doc_id,
+            workspace_id=workspace_id,
+            title=title,
+            text_content=text_content,
+            source_type=source_type,
+            filename=filename,
+            authors="YouTube Transcript" if source_type == "youtube" else "Web Article",
+            pdf_url=req.url,
+            section_aware=req.section_aware,
+            exclude_references=req.exclude_references
+        )
+
+        return UploadResponse(
+            status="success",
+            doc_id=doc_id,
+            title=title,
+            chunks_indexed=indexed_count,
+            total_in_index=get_vector_store().count(),
+            sections=list(dict.fromkeys(sections)),
+            char_count=len(text_content)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error ingesting URL {req.url}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/documents/ingest-note", response_model=UploadResponse, summary="Ingest a quick text/markdown note or pasted snippet")
+def ingest_note_document(req: NoteIngestRequest):
+    """Save and index a quick note, lecture summary, or pasted text directly into the workspace."""
+    try:
+        text_content = req.content.strip()
+        if not text_content:
+            raise HTTPException(status_code=400, detail="Note content cannot be empty.")
+
+        title = req.title.strip()
+        workspace_id = req.workspace_id or "default"
+        doc_id = compute_deterministic_doc_id("note", title, text_content)
+        filename = f"{re.sub(r'[^a-zA-Z0-9_-]', '_', title)[:50]}.md"
+
+        indexed_count, sections = _index_and_register_document(
+            doc_id=doc_id,
+            workspace_id=workspace_id,
+            title=title,
+            text_content=text_content,
+            source_type="note",
+            filename=filename,
+            authors="Quick Note",
+            section_aware=True,
+            exclude_references=False
+        )
+
+        return UploadResponse(
+            status="success",
+            doc_id=doc_id,
+            title=title,
+            chunks_indexed=indexed_count,
+            total_in_index=get_vector_store().count(),
+            sections=list(dict.fromkeys(sections)),
+            char_count=len(text_content)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error ingesting quick note: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/documents/deduplicate", response_model=DeduplicateResponse, summary="Remove duplicate documents from workspace and vector store")
+def deduplicate_documents(workspace_id: Optional[str] = None):
+    """Scan indexed documents for duplicate titles/content and remove redundant copies."""
+    ws_store = get_workspace_store_instance()
+    catalog = get_document_catalog()
+    vstore = get_vector_store()
+
+    docs = ws_store.list_documents(workspace_id=workspace_id)
+    seen_keys = {}
+    removed_ids = []
+
+    # Sort newest first so we keep the most recently updated copy
+    sorted_docs = sorted(
+        docs,
+        key=lambda d: d.get("created_at") or d.get("uploaded_at") or "",
+        reverse=True
+    )
+    for d in sorted_docs:
+        doc_id = d["doc_id"]
+        ws = d.get("workspace_id", "default")
+        norm_title = re.sub(r"\s+", " ", (d.get("title") or "").strip().lower())
+        char_bucket = d.get("char_count", 0)
+        dedup_key = (ws, norm_title, char_bucket)
+        if dedup_key in seen_keys:
+            removed_ids.append(doc_id)
+        else:
+            seen_keys[dedup_key] = doc_id
+
+    if removed_ids:
+        ws_store.batch_delete_documents(removed_ids)
+        for rid in removed_ids:
+            try:
+                catalog.delete_document(rid)
+                vstore.delete_by_doc_id(rid)
+            except Exception as e:
+                logger.warning(f"Failed cleaning duplicate doc {rid}: {e}")
+
+    # Also clean up duplicate entries in local DocumentCatalog that aren't in ws_store
+    cat_docs = catalog.list_documents()
+    cat_seen = {}
+    for s in sorted(
+        cat_docs,
+        key=lambda x: getattr(x, "created_at", "") or getattr(x, "uploaded_at", "") or "",
+        reverse=True
+    ):
+        key = (s.title.strip().lower(), s.char_count)
+        if key in cat_seen and s.doc_id not in removed_ids:
+            removed_ids.append(s.doc_id)
+            catalog.delete_document(s.doc_id)
+            vstore.delete_by_doc_id(s.doc_id)
+        else:
+            cat_seen[key] = s.doc_id
+
+    remaining = len(ws_store.list_documents(workspace_id=workspace_id))
+    return DeduplicateResponse(
+        status="success",
+        duplicates_removed=len(removed_ids),
+        removed_doc_ids=removed_ids,
+        remaining_documents=remaining
+    )
+
+
 @app.get("/documents", response_model=List[DocumentSummarySchema], summary="List all indexed papers from online database")
 def list_documents(workspace_id: Optional[str] = None):
-    """Memory-efficient document listing from online database, optionally scoped to a workspace."""
+    """Memory-efficient document listing from online database, enriched with NotebookLM Source Guides."""
+    catalog = get_document_catalog()
+    cat_map = {s.doc_id: s for s in catalog.list_documents()}
+
     ws_store = get_workspace_store_instance()
     docs = ws_store.list_documents(workspace_id=workspace_id)
-    if docs:
-        return [DocumentSummarySchema(**d) for d in docs]
 
-    catalog = get_document_catalog()
-    summaries = catalog.list_documents()
-    return [DocumentSummarySchema(**asdict(s), workspace_id="default") for s in summaries]
+    # If querying the default workspace (or all), also include any catalog documents not yet in ws_store
+    if workspace_id in (None, "default"):
+        all_ws_docs = ws_store.list_documents(workspace_id=None) or []
+        known_ws_ids = {d.get("doc_id") for d in all_ws_docs}
+        docs = list(docs or [])
+        for doc_id, cat_item in cat_map.items():
+            if doc_id not in known_ws_ids:
+                d_dict = asdict(cat_item)
+                d_dict["workspace_id"] = "default"
+                docs.append(d_dict)
+
+    if docs:
+        enriched = []
+        for d in docs:
+            doc_id = d.get("doc_id", "")
+            cat_item = cat_map.get(doc_id)
+            if cat_item:
+                d["summary"] = cat_item.summary
+                d["key_topics"] = cat_item.key_topics
+                d["suggested_questions"] = cat_item.suggested_questions
+            else:
+                guide = _extract_source_guide(d.get("title", doc_id), "", d.get("sections", []))
+                d.update(guide)
+            enriched.append(DocumentSummarySchema(**d))
+        return enriched
+
+    if workspace_id in (None, "default"):
+        return [DocumentSummarySchema(**asdict(s), workspace_id="default") for s in cat_map.values()]
+    return []
+
+
+@app.get("/notebook/guide", response_model=NotebookGuideResponse, summary="Get NotebookLM-style Notebook Guide & Suggested Questions")
+def get_notebook_guide(
+    workspace_id: str = Query("default"),
+    doc_ids: Optional[str] = Query(None, description="Comma-separated doc_ids if scoped")
+):
+    """Generate a NotebookLM-style overview, key topics, and suggested questions for active workspace sources."""
+    all_docs = [d.model_dump() for d in list_documents(workspace_id=workspace_id)]
+    if doc_ids:
+        wanted = {x.strip() for x in doc_ids.split(",") if x.strip()}
+        if wanted:
+            all_docs = [d for d in all_docs if d["doc_id"] in wanted]
+    guide = generate_notebook_guide(all_docs)
+    return NotebookGuideResponse(
+        workspace_id=workspace_id,
+        source_count=guide["source_count"],
+        overview=guide["overview"],
+        key_topics=guide["key_topics"],
+        suggested_questions=guide["suggested_questions"]
+    )
+
 
 @app.get("/documents/{doc_id}", response_model=DocumentDetailSchema, summary="Get full document text on-demand from online database")
 def get_document_detail(doc_id: str):
-    """On-demand full content loading from online database for document inspection."""
+    """On-demand full content and Source Guide loading from online database for document inspection."""
     ws_store = get_workspace_store_instance()
     doc_dict = ws_store.get_document(doc_id)
     if doc_dict:
         full_text = doc_dict.pop("full_text", "")
+        guide = _extract_source_guide(doc_dict.get("title", doc_id), full_text[:3500], doc_dict.get("sections", []))
+        doc_dict.update(guide)
         return DocumentDetailSchema(
             summary=DocumentSummarySchema(**doc_dict),
             full_text=full_text
@@ -463,9 +708,9 @@ def query_rag(req: QueryRequest):
         # Workspace scoping
         effective_doc_ids = req.doc_ids
         if not effective_doc_ids and req.workspace_id:
-            ws_docs = get_workspace_store_instance().list_documents(workspace_id=req.workspace_id)
+            ws_docs = list_documents(workspace_id=req.workspace_id)
             if ws_docs:
-                effective_doc_ids = [d["doc_id"] for d in ws_docs]
+                effective_doc_ids = [d.doc_id for d in ws_docs]
             else:
                 effective_doc_ids = ["__EMPTY_WORKSPACE__"]
 
@@ -499,6 +744,8 @@ def query_rag(req: QueryRequest):
 
         return QueryResponse(
             query=res.query,
+            rewritten_query=res.rewritten_query,
+            query_intent=res.query_intent,
             answer=res.answer,
             sources=citations,
             latency_ms=res.latency_ms,
@@ -509,11 +756,136 @@ def query_rag(req: QueryRequest):
             hyde_passage=res.hyde_passage,
             search_mode=res.search_mode,
             filtered_out_count=res.filtered_out_count,
-            score_threshold=res.score_threshold
+            score_threshold=res.score_threshold,
+            follow_up_questions=res.follow_up_questions
         )
     except Exception as e:
         logger.error(f"Error executing query: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/query/stream", summary="Stream RAG query response via Server-Sent Events (SSE)")
+def query_rag_stream(req: QueryRequest):
+    """Execute retrieval and stream citations + answer tokens progressively using SSE."""
+    def event_stream():
+        try:
+            res = query_rag(req)
+            meta_payload = {
+                "query": res.query,
+                "rewritten_query": res.rewritten_query,
+                "query_intent": res.query_intent,
+                "sources": [s.model_dump() for s in res.sources],
+                "latency_ms": res.latency_ms,
+                "total_retrieved": res.total_retrieved,
+                "confidence_score": res.confidence_score,
+                "is_low_confidence": res.is_low_confidence,
+                "warning_note": res.warning_note,
+                "hyde_passage": res.hyde_passage,
+                "search_mode": res.search_mode,
+                "filtered_out_count": res.filtered_out_count,
+                "score_threshold": res.score_threshold,
+            }
+            yield f"event: metadata\ndata: {json.dumps(meta_payload)}\n\n"
+
+            # Stream answer in smooth word chunks so UI renders progressively
+            words = re.split(r"(\s+)", res.answer or "")
+            chunk_buf = ""
+            for w in words:
+                chunk_buf += w
+                if len(chunk_buf) >= 18:
+                    yield f"event: token\ndata: {json.dumps({'token': chunk_buf})}\n\n"
+                    chunk_buf = ""
+            if chunk_buf:
+                yield f"event: token\ndata: {json.dumps({'token': chunk_buf})}\n\n"
+
+            yield f"event: done\ndata: {json.dumps({'answer': res.answer})}\n\n"
+        except Exception as exc:
+            yield f"event: error\ndata: {json.dumps({'error': str(exc)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@app.post("/studio/generate", response_model=StudioGenerateResponse, summary="Generate Study Guide, Quiz, Comparison Matrix, Action Items, or Audio Briefing")
+def studio_generate_endpoint(req: StudioGenerateRequest):
+    """Generate 1-click study and research artifacts from workspace documents."""
+    effective_action = req.tool_type or req.action_type or "study_guide"
+    try:
+        t0 = time.perf_counter()
+        ws_store = get_workspace_store_instance()
+        catalog = get_document_catalog()
+        target_docs = []
+
+        doc_ids_to_load = req.doc_ids
+        if not doc_ids_to_load:
+            ws_id = req.workspace_id or "default"
+            summaries = list_documents(workspace_id=ws_id)
+            doc_ids_to_load = [s.doc_id for s in summaries[:12]]
+
+        for did in (doc_ids_to_load or []):
+            doc = ws_store.get_document(did)
+            if doc:
+                target_docs.append(doc)
+            else:
+                cat_doc = catalog.get_document(did)
+                if cat_doc:
+                    target_docs.append({
+                        "doc_id": cat_doc.summary.doc_id,
+                        "title": cat_doc.summary.title,
+                        "authors": cat_doc.summary.authors,
+                        "source_type": cat_doc.summary.source_type,
+                        "sections": cat_doc.summary.sections,
+                        "full_text": cat_doc.full_text
+                    })
+
+        result = generate_studio_artifact(
+            action_type=effective_action,
+            documents=target_docs,
+            generator=get_generator(),
+            custom_focus=req.custom_focus or ""
+        )
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return StudioGenerateResponse(
+            tool_type=result["action_type"],
+            action_type=result["action_type"],
+            title=result["title"],
+            content=result["content"],
+            doc_count=len(target_docs),
+            sources=[CitationSchema(**s) for s in result.get("sources", [])],
+            latency_ms=round(elapsed_ms, 2)
+        )
+    except Exception as e:
+        logger.error(f"Error generating studio artifact ({effective_action}): {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/export/markdown", response_model=MarkdownExportResponse, summary="Export conversation or studio report as Obsidian Markdown + BibTeX")
+def export_markdown_endpoint(req: MarkdownExportRequest):
+    """Format research synthesis or study artifacts as downloadable Obsidian Markdown with YAML frontmatter and BibTeX."""
+    try:
+        body_text = req.content if req.content is not None else (req.answer or "")
+        ws_label = req.workspace_name or req.workspace_id or "default"
+        md_text = format_markdown_export(
+            title=req.title,
+            query=req.query,
+            answer=body_text,
+            sources=req.sources,
+            workspace_id=ws_label,
+            include_bibtex=req.include_bibtex,
+            obsidian_compatible=req.obsidian_compatible
+        )
+        # Extract BibTeX block if present
+        bib_match = re.search(r"```bibtex\s*(.*?)```", md_text, flags=re.DOTALL)
+        bibtex_str = bib_match.group(1).strip() if bib_match else ""
+        slug = re.sub(r"[^a-zA-Z0-9_-]", "_", req.title.strip())[:45].strip("_") or "nexusrag_note"
+        return MarkdownExportResponse(
+            markdown=md_text,
+            bibtex=bibtex_str,
+            filename=f"{slug}.md"
+        )
+    except Exception as e:
+        logger.error(f"Error exporting markdown: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/evaluate", response_model=EvaluationReport, summary="Query and evaluate output")
 def evaluate_rag(req: QueryRequest):
@@ -697,60 +1069,20 @@ def gdrive_import(req: GDriveImportRequest):
             raise HTTPException(status_code=400, detail=f"File {filename} is empty or contains no extractable text.")
 
         raw_stem = Path(filename).stem
-        clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
-        doc_id = f"gdrive_{clean_stem}_{int(time.time())}"
         title = req.title or raw_stem.replace("_", " ").title()
-
-        chunker = DocumentChunker()
         ws_id = req.workspace_id or "default"
-        base_meta = {
-            "doc_id": doc_id,
-            "workspace_id": ws_id,
-            "title": title,
-            "authors": "Google Drive",
-            "published": datetime.now().strftime("%Y-%m-%d"),
-            "pdf_url": "",
-            "citation_count": 0,
-            "source_type": "gdrive"
-        }
+        doc_id = compute_deterministic_doc_id("gdrive", filename, f"{req.file_id}:{ws_id}")
 
-        chunks = chunker.split_text(
-            text_content,
-            base_metadata=base_meta,
-            section_aware=req.section_aware,
-            exclude_references=req.exclude_references
-        )
-        store = get_vector_store()
-        indexed_count = store.add_chunks(chunks)
-
-        sections = [c.section for c in chunks]
-
-        # Register in online database and catalog
-        ws_store = get_workspace_store_instance()
-        ws_store.register_document(
+        indexed_count, sections = _index_and_register_document(
             doc_id=doc_id,
             workspace_id=ws_id,
             title=title,
-            full_text=text_content,
+            text_content=text_content,
             source_type="gdrive",
             filename=filename,
             authors="Google Drive",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
-        )
-
-        catalog = get_document_catalog()
-        catalog.register_document(
-            doc_id=doc_id,
-            title=title,
-            full_text=text_content,
-            source_type="gdrive",
-            filename=filename,
-            authors="Google Drive",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
+            section_aware=req.section_aware,
+            exclude_references=req.exclude_references
         )
 
         return GDriveImportResponse(
@@ -759,7 +1091,7 @@ def gdrive_import(req: GDriveImportRequest):
             title=title,
             filename=filename,
             chunks_indexed=indexed_count,
-            total_in_index=store.count(),
+            total_in_index=get_vector_store().count(),
             sections=list(dict.fromkeys(sections)),
             char_count=len(text_content)
         )
@@ -773,10 +1105,6 @@ def gdrive_import(req: GDriveImportRequest):
 def gdrive_import_batch(req: GDriveBatchImportRequest):
     """Batch download and index multiple files from Google Drive into online database."""
     conn = get_gdrive_connector()
-    chunker = DocumentChunker()
-    store = get_vector_store()
-    catalog = get_document_catalog()
-    ws_store = get_workspace_store_instance()
     ws_id = req.workspace_id or "default"
 
     imported_docs = []
@@ -790,53 +1118,19 @@ def gdrive_import_batch(req: GDriveBatchImportRequest):
                 continue
 
             raw_stem = Path(filename).stem
-            clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
-            doc_id = f"gdrive_{clean_stem}_{int(time.time())}"
             title = item.title or raw_stem.replace("_", " ").title()
+            doc_id = compute_deterministic_doc_id("gdrive", filename, f"{item.file_id}:{ws_id}")
 
-            base_meta = {
-                "doc_id": doc_id,
-                "workspace_id": ws_id,
-                "title": title,
-                "authors": "Google Drive",
-                "published": datetime.now().strftime("%Y-%m-%d"),
-                "pdf_url": "",
-                "citation_count": 0,
-                "source_type": "gdrive"
-            }
-
-            chunks = chunker.split_text(
-                text_content,
-                base_metadata=base_meta,
-                section_aware=req.section_aware,
-                exclude_references=req.exclude_references
-            )
-            indexed_count = store.add_chunks(chunks)
-            sections = [c.section for c in chunks]
-
-            ws_store.register_document(
+            indexed_count, _ = _index_and_register_document(
                 doc_id=doc_id,
                 workspace_id=ws_id,
                 title=title,
-                full_text=text_content,
+                text_content=text_content,
                 source_type="gdrive",
                 filename=filename,
                 authors="Google Drive",
-                citation_count=0,
-                chunk_count=len(chunks),
-                sections=sections
-            )
-
-            catalog.register_document(
-                doc_id=doc_id,
-                title=title,
-                full_text=text_content,
-                source_type="gdrive",
-                filename=filename,
-                authors="Google Drive",
-                citation_count=0,
-                chunk_count=len(chunks),
-                sections=sections
+                section_aware=req.section_aware,
+                exclude_references=req.exclude_references
             )
 
             imported_docs.append({
@@ -1002,58 +1296,24 @@ def classroom_import(req: ClassroomImportRequest):
         if not text_content.strip():
             raise HTTPException(status_code=400, detail=f"Content for '{req.title}' is empty or unextractable.")
 
-        raw_stem = Path(filename).stem
-        clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
-        doc_id = f"class_{clean_stem}_{int(time.time())}"
         ws_id = req.workspace_id or "default"
         course_label = req.course_name or req.course_id
-
-        chunker = DocumentChunker()
-        base_meta = {
-            "doc_id": doc_id,
-            "workspace_id": ws_id,
-            "title": req.title,
-            "authors": f"Google Classroom ({course_label})",
-            "published": datetime.now().strftime("%Y-%m-%d"),
-            "pdf_url": "",
-            "citation_count": 0,
-            "source_type": "classroom"
-        }
-        chunks = chunker.split_text(
-            text_content,
-            base_metadata=base_meta,
-            section_aware=req.section_aware,
-            exclude_references=req.exclude_references
+        doc_id = compute_deterministic_doc_id(
+            "class",
+            filename,
+            f"{req.course_id}:{req.drive_file_id or req.title}:{ws_id}"
         )
-        store = get_vector_store()
-        indexed_count = store.add_chunks(chunks)
-        sections = [c.section for c in chunks]
 
-        # Register in database and catalog
-        ws_store = get_workspace_store_instance()
-        ws_store.register_document(
+        indexed_count, sections = _index_and_register_document(
             doc_id=doc_id,
             workspace_id=ws_id,
             title=req.title,
-            full_text=text_content,
+            text_content=text_content,
             source_type="classroom",
             filename=filename,
             authors=f"Google Classroom ({course_label})",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
-        )
-        catalog = get_document_catalog()
-        catalog.register_document(
-            doc_id=doc_id,
-            title=req.title,
-            full_text=text_content,
-            source_type="classroom",
-            filename=filename,
-            authors=f"Google Classroom ({course_label})",
-            citation_count=0,
-            chunk_count=len(chunks),
-            sections=sections
+            section_aware=req.section_aware,
+            exclude_references=req.exclude_references
         )
 
         return ClassroomImportResponse(
@@ -1062,10 +1322,12 @@ def classroom_import(req: ClassroomImportRequest):
             title=req.title,
             course_name=course_label,
             chunks_indexed=indexed_count,
-            total_in_index=store.count(),
+            total_in_index=get_vector_store().count(),
             sections=sections,
             char_count=len(text_content)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error importing Classroom document '{req.title}': {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1074,10 +1336,6 @@ def classroom_import(req: ClassroomImportRequest):
 def classroom_import_batch(req: ClassroomBatchImportRequest):
     """Batch download and index multiple Classroom materials/announcements into online DB."""
     conn = get_classroom_connector()
-    chunker = DocumentChunker()
-    store = get_vector_store()
-    catalog = get_document_catalog()
-    ws_store = get_workspace_store_instance()
     ws_id = req.workspace_id or "default"
 
     imported_docs = []
@@ -1096,52 +1354,23 @@ def classroom_import_batch(req: ClassroomBatchImportRequest):
                 errors.append({"title": item.title, "error": "Empty or unparseable text content."})
                 continue
 
-            raw_stem = Path(filename).stem
-            clean_stem = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_stem)
-            doc_id = f"class_{clean_stem}_{int(time.time())}"
             course_label = item.course_name or item.course_id
-
-            base_meta = {
-                "doc_id": doc_id,
-                "workspace_id": ws_id,
-                "title": item.title,
-                "authors": f"Google Classroom ({course_label})",
-                "published": datetime.now().strftime("%Y-%m-%d"),
-                "pdf_url": "",
-                "citation_count": 0,
-                "source_type": "classroom"
-            }
-            chunks = chunker.split_text(
-                text_content,
-                base_metadata=base_meta,
-                section_aware=req.section_aware,
-                exclude_references=req.exclude_references
+            doc_id = compute_deterministic_doc_id(
+                "class",
+                filename,
+                f"{item.course_id}:{item.drive_file_id or item.title}:{ws_id}"
             )
-            indexed_count = store.add_chunks(chunks)
-            sections = [c.section for c in chunks]
 
-            ws_store.register_document(
+            indexed_count, sections = _index_and_register_document(
                 doc_id=doc_id,
                 workspace_id=ws_id,
                 title=item.title,
-                full_text=text_content,
+                text_content=text_content,
                 source_type="classroom",
                 filename=filename,
                 authors=f"Google Classroom ({course_label})",
-                citation_count=0,
-                chunk_count=len(chunks),
-                sections=sections
-            )
-            catalog.register_document(
-                doc_id=doc_id,
-                title=item.title,
-                full_text=text_content,
-                source_type="classroom",
-                filename=filename,
-                authors=f"Google Classroom ({course_label})",
-                citation_count=0,
-                chunk_count=len(chunks),
-                sections=sections
+                section_aware=req.section_aware,
+                exclude_references=req.exclude_references
             )
             imported_docs.append({
                 "doc_id": doc_id,

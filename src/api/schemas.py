@@ -36,6 +36,9 @@ class DocumentSummarySchema(BaseModel):
     sections: List[str] = []
     created_at: str = ""
     char_count: int = 0
+    summary: str = ""
+    key_topics: List[str] = []
+    suggested_questions: List[str] = []
 
 class DocumentDetailSchema(BaseModel):
     summary: DocumentSummarySchema
@@ -95,6 +98,9 @@ class QueryResponse(BaseModel):
     search_mode: str = "hybrid"
     filtered_out_count: int = 0
     score_threshold: float = 0.35
+    rewritten_query: Optional[str] = None
+    query_intent: Optional[str] = "conceptual_research"
+    follow_up_questions: List[str] = []
 
 class MetricDetail(BaseModel):
     score: float
@@ -466,4 +472,71 @@ class ClassroomLoginStatusResponse(BaseModel):
     error: Optional[str] = None
 
 
+# ==============================================================================
+# Everyday Ingestion, Deduplication, Studio Tools & Export Schemas
+# ==============================================================================
+
+class UrlIngestRequest(BaseModel):
+    url: str = Field(..., description="Web article URL, YouTube video link, or direct PDF URL")
+    title: Optional[str] = Field(default=None, description="Optional custom title override")
+    workspace_id: Optional[str] = Field(default="default", description="Target workspace ID")
+    section_aware: bool = Field(default=True, description="Enable section-aware chunking")
+    exclude_references: bool = Field(default=True, description="Exclude reference list noise")
+
+class NoteIngestRequest(BaseModel):
+    title: str = Field(..., description="Title of the quick note, lecture summary, or syllabus paste")
+    content: str = Field(..., description="Raw text or Markdown content to index")
+    workspace_id: Optional[str] = Field(default="default", description="Target workspace ID")
+    section_aware: bool = Field(default=True, description="Enable section-aware chunking")
+
+class DeduplicateResponse(BaseModel):
+    status: str = "success"
+    duplicates_removed: int = 0
+    removed_doc_ids: List[str] = []
+    remaining_documents: int = 0
+
+class StudioGenerateRequest(BaseModel):
+    tool_type: Optional[str] = Field(
+        default=None,
+        description="'study_guide', 'quiz', 'comparison_matrix', 'action_items', or 'executive_briefing'"
+    )
+    action_type: Optional[str] = Field(
+        default=None,
+        description="Alias for tool_type"
+    )
+    workspace_id: Optional[str] = Field(default="default", description="Workspace scope")
+    doc_ids: Optional[List[str]] = Field(default=None, description="Specific document IDs to include")
+    custom_focus: Optional[str] = Field(default=None, description="Optional topic or exam focus")
+
+class StudioGenerateResponse(BaseModel):
+    tool_type: str
+    action_type: str
+    title: str
+    content: str
+    doc_count: int = 0
+    sources: List[CitationSchema] = []
+    latency_ms: float
+
+class MarkdownExportRequest(BaseModel):
+    title: str = Field(default="NexusRAG Research Synthesis")
+    query: str = Field(default="")
+    content: Optional[str] = Field(default=None)
+    answer: Optional[str] = Field(default=None)
+    sources: List[Dict[str, Any]] = Field(default_factory=list)
+    workspace_id: str = Field(default="default")
+    workspace_name: Optional[str] = Field(default=None)
+    include_bibtex: bool = Field(default=True)
+    obsidian_compatible: bool = Field(default=True)
+
+class MarkdownExportResponse(BaseModel):
+    markdown: str
+    bibtex: str = ""
+    filename: str
+
+class NotebookGuideResponse(BaseModel):
+    workspace_id: str = "default"
+    source_count: int = 0
+    overview: str = ""
+    key_topics: List[str] = []
+    suggested_questions: List[str] = []
 

@@ -546,25 +546,19 @@ class GoogleClassroomConnector:
                 text = res.decode("utf-8") if isinstance(res, bytes) else str(res)
                 return filename, text, "text/plain"
 
-            # Binary download (PDF, plain text, markdown)
+            # Google Sheets export
+            if file_mime == "application/vnd.google-apps.spreadsheet":
+                from src.ingestion.universal_parser import parse_csv_bytes
+                res = self.drive_service.files().export(fileId=drive_file_id, mimeType="text/csv").execute()
+                csv_bytes = res if isinstance(res, bytes) else str(res).encode("utf-8")
+                return filename, parse_csv_bytes(csv_bytes), "text/csv"
+
+            # Binary download (PDF, DOCX, PPTX, XLSX, IPYNB, plain text, markdown)
+            from src.ingestion.universal_parser import parse_any_file
             res = self.drive_service.files().get_media(fileId=drive_file_id).execute()
             bytes_content = res if isinstance(res, bytes) else res.encode("utf-8")
-
-            if file_mime == "application/pdf" or filename.endswith(".pdf"):
-                reader = PdfReader(io.BytesIO(bytes_content))
-                pages_text = []
-                for page in reader.pages[:40]:
-                    t = page.extract_text()
-                    if t:
-                        pages_text.append(t)
-                extracted = "\n\n".join(pages_text)
-                return filename, extracted, "application/pdf"
-
-            try:
-                text = bytes_content.decode("utf-8")
-                return filename, text, "text/plain"
-            except Exception:
-                return filename, str(bytes_content[:4000]), file_mime
+            extracted, _ = parse_any_file(filename, bytes_content, mime_type=file_mime)
+            return filename, extracted, file_mime
 
         except Exception as e:
             logger.error(f"Failed to fetch live file {drive_file_id} from Drive: {e}")
