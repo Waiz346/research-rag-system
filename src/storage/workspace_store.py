@@ -525,8 +525,11 @@ class WorkspaceStore:
                 workspace_id = ws.id
 
             sections_clean = list(dict.fromkeys(sections or ["General"]))
-            sections_str = json.dumps(sections_clean)
-            fname = filename or f"{doc_id}.txt"
+            sections_str = json.dumps(sections_clean).replace("\x00", "")
+            fname = (filename or f"{doc_id}.txt").replace("\x00", "")
+            title = (title or doc_id).replace("\x00", "")
+            full_text = (full_text or "").replace("\x00", "")
+            authors = (authors or "Unknown").replace("\x00", "")
             char_count = len(full_text)
 
             doc = session.query(Document).filter(Document.id == doc_id).first()

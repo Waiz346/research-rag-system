@@ -150,5 +150,265 @@
       "What methodology or architecture is proposed in \"Self-RAG: Learning to Retrieve, Generate, and Critique through Se...\"?",
       "What experimental results or limitations are discussed in \"Self-RAG: Learning to Retrieve, Generate, and Critique through Se...\"?"
     ]
+  },
+  "note_LiteratureMe_Note__EEG_Preprocessing_Comparison___Trade-offs_23b63249": {
+    "doc_id": "note_LiteratureMe_Note__EEG_Preprocessing_Comparison___Trade-offs_23b63249",
+    "title": "Note: EEG Preprocessing Comparison & Trade-offs Matrix",
+    "source_type": "note",
+    "filename": "Note__EEG_Preprocessing_Comparison___Trade-offs_Ma.md",
+    "authors": "Quick Note",
+    "citation_count": 0,
+    "chunk_count": 10,
+    "sections": [
+      "Methodology",
+      "Cross-Source Synthesis"
+    ],
+    "created_at": "2026-10-18 12:23:07",
+    "char_count": 6310,
+    "summary": "### Literature & Methodology Comparison Matrix | Source | Core Problem / Objective | Methodology / Architecture | Key Results / Findings | Limitations / Notes | | :--- | :--- | :--- | :--- | :--- | | **[Source 1]** Tang et al. | Validate a TMS-EEG cleaning pipeline and benchmark dataset for closed-loop neurostimulation and BCI frameworks. | Evaluates two widely used source-based artifact removal approaches and...",
+    "key_topics": [
+      "Note",
+      "Preprocessing",
+      "Comparison",
+      "Trade-offs",
+      "Matrix",
+      "Cross-Source"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Note: EEG Preprocessing Comparison & Trade-offs Matrix\"?",
+      "What methodology or architecture is proposed in \"Note: EEG Preprocessing Comparison & Trade-offs Matrix\"?",
+      "What experimental results or limitations are discussed in \"Note: EEG Preprocessing Comparison & Trade-offs Matrix\"?"
+    ]
+  },
+  "2502.08686v1": {
+    "doc_id": "2502.08686v1",
+    "title": "EEG Artifact Detection and Correction with Deep Autoencoders",
+    "source_type": "arxiv",
+    "filename": "2502.08686v1.pdf",
+    "authors": "David Aquilu\u00e9-Llorens, Aureli Soria-Frisch",
+    "citation_count": 6,
+    "chunk_count": 90,
+    "sections": [
+      "Eeg Artifact Detection And Correction With Deep Autoencoders",
+      "Abstract",
+      "Full Paper Content",
+      "Index Terms:",
+      "I Introduction",
+      "Ii Methods",
+      "Ii-A Artifact Detection",
+      "Ii-B Artifact Correction",
+      "Ii-C Datasets",
+      "Ii-C 1 Lemon Dataset",
+      "Pre-Processed Lemon For Artifact Detection",
+      "Automatically Denoised Lemon For Artifact Correction",
+      "Ii-C 2 Eog-Synthetically Contaminated Dataset",
+      "Ii-D Lsteeg Network Structure",
+      "Experiments",
+      "Ii-E 1 Unet",
+      "Ii-E 2 Cleegn",
+      "Ii-F Latent Space Exploration",
+      "Ii-F 1 Latent Space Dimension Activations",
+      "Ii-F 2 Linear Interpolation In The Latent Space",
+      "Iii-A Artifact Detection",
+      "Iii-B Artifact Correction",
+      "Iii-C Interpretability Of The Learned Latent Space",
+      "Iii-C 1 Spatial Activations Of The Latent Space Dimensions",
+      "Iii-C 2 Linear Interpolation In The Latent Space",
+      "Iv Discussion",
+      "V Conclusion",
+      "Acknowledgment"
+    ],
+    "created_at": "2026-10-18 12:47:41",
+    "char_count": 60589,
+    "summary": "# EEG Artifact Detection and Correction with Deep Autoencoders Authors: David Aquilu\u00e9-Llorens, Aureli Soria-Frisch Citations: 6 ## Abstract EEG signals convey important information about brain activity both in healthy and pathological conditions. However, they are inherently noisy, which poses significant challenges for accurate analysis and interpretation. Traditional EEG artifact removal methods, while...",
+    "key_topics": [
+      "Artifact",
+      "Detection",
+      "Correction",
+      "Deep",
+      "Autoencoders",
+      "Full"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"EEG Artifact Detection and Correction with Deep Autoencoders\"?",
+      "What methodology or architecture is proposed in \"EEG Artifact Detection and Correction with Deep Autoencoders\"?",
+      "What experimental results or limitations are discussed in \"EEG Artifact Detection and Correction with Deep Autoencoders\"?"
+    ]
+  },
+  "2609.36609v1": {
+    "doc_id": "2609.36609v1",
+    "title": "Best Practices in EEG Analysis: Preprocessing, Modeling, and Machine Learning",
+    "source_type": "arxiv",
+    "filename": "2609.36609v1.pdf",
+    "authors": "Parsa Razmara, Woojae Jeong, Aditya Kommineni, Raymundo Cassani, Richard Leahy, Takfarinas Medani",
+    "citation_count": 0,
+    "chunk_count": 152,
+    "sections": [
+      "Methodology",
+      "Abstract",
+      "Full Paper Content",
+      "Electro Encephalogram Signals And Cognition",
+      "1 Introduction And Scope",
+      "2 Preprocessing Eeg Signals",
+      "2.1 Common Eeg Noise Sources And Artifacts",
+      "2.2 Filtering: High-Pass, Low-Pass, Notch, And Anti-Alias Considerations",
+      "2.3 Detecting And Repairing Bad Channels",
+      "2.4 Reference Schemes: Average, Rest, Laplacian, And Source Derivations",
+      "2.5 Artifact Correction Techniques: Ica Variants, Gedai, And Beyond",
+      "Independent Component Analysis (Ica)",
+      "Application Of The Ica On The Data",
+      "Automated Ic Classification (Iclabel)",
+      "Recommendations And Best Practices.",
+      "2.6 Simultaneous Eeg-Fmri: Cardiac And Pulse Artifacts, Field Dependence, And Practical Guidance",
+      "2.7 Organizing Data With Bids-Eeg And Maintaining Reproducibility",
+      "3.1 Event-Related Potential Analysis",
+      "3.2 Time\u2013Frequency Analysis",
+      "3.3 Connectivity Analysis",
+      "3.5 Statistical Inferences In Eeg Analysis",
+      "4 Machine Learning For Eeg: From Features To Classifiers And Beyond",
+      "4.4 Comparative Analysis: The Discrepancy Between Dl And Ssl Performance",
+      "Experiments"
+    ],
+    "created_at": "2026-10-18 12:47:41",
+    "char_count": 116809,
+    "summary": "# Best Practices in EEG Analysis: Preprocessing, Modeling, and Machine Learning Authors: Parsa Razmara, Woojae Jeong, Aditya Kommineni, Raymundo Cassani, Richard Leahy, Takfarinas Medani ## Abstract Electroencephalography (EEG) analysis requires careful choices in preprocessing, statistical modeling, and machine learning because EEG signals are highly susceptible to artifacts, volume conduction, low...",
+    "key_topics": [
+      "Best",
+      "Practices",
+      "Preprocessing",
+      "Modeling",
+      "Machine",
+      "Learning"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Best Practices in EEG Analysis: Preprocessing, Modeling, and Mach...\"?",
+      "What methodology or architecture is proposed in \"Best Practices in EEG Analysis: Preprocessing, Modeling, and Mach...\"?",
+      "What experimental results or limitations are discussed in \"Best Practices in EEG Analysis: Preprocessing, Modeling, and Mach...\"?"
+    ]
+  },
+  "2411.18392v1": {
+    "doc_id": "2411.18392v1",
+    "title": "The more, the better? Evaluating the role of EEG preprocessing for deep learning applications",
+    "source_type": "arxiv",
+    "filename": "2411.18392v1.pdf",
+    "authors": "Federico Del Pup, Andrea Zanola, Louis Fabrice Tshimanga, Alessandra Bertoldo, Manfredo Atzori",
+    "citation_count": 0,
+    "chunk_count": 96,
+    "sections": [
+      "The More, The Better? Evaluating The Role Of Eeg Preprocessing For Deep Learning Applications",
+      "Abstract",
+      "Full Paper Content",
+      "The More, The Better? Evaluating The Role Of Eeg Preprocessing For Deep Learning Applications.",
+      "Index Terms:",
+      "I Introduction",
+      "Ii Methods",
+      "Ii-A Dataset Selection",
+      "Ii-A 1 Eye - Ds004148",
+      "Ii-A 2 Mmi - Ds004362",
+      "Ii-A 3 Parkinson\u2019S - Ds002778",
+      "Ii-A 4 Parkinson\u2019S - Ds003490",
+      "Ii-A 5 Alzheimer\u2019S - Ds004504",
+      "Ii-A 6 Sleep - Ds004902",
+      "Ii-A 7 Fep - Ds003947",
+      "Ii-B Data Preprocessing",
+      "Ii-C Implementation Details",
+      "Methodology",
+      "Ii-C 2 Data Partition",
+      "Ii-C 3 Training Hyperparameters",
+      "Experiments",
+      "Ii-D Statistical Analysis",
+      "Iii-A Eegnet",
+      "Iii-B Shallownet",
+      "Iii-C Deepconvnet",
+      "Iii-D Fbcnet",
+      "Iv Discussion",
+      "V Conclusion",
+      "Vi Acknowledgment",
+      "Vii Supplementary Material",
+      "Vii-A Additional Implementation Choices",
+      "Vii-A 1 Reducing The Training Time",
+      "Summary",
+      "Vii-A 3 Why Splitting At The Subject Level Is Important?",
+      "Vii-C Task Marginalization"
+    ],
+    "created_at": "2026-10-18 12:47:41",
+    "char_count": 71609,
+    "summary": "# The more, the better? Evaluating the role of EEG preprocessing for deep learning applications Authors: Federico Del Pup, Andrea Zanola, Louis Fabrice Tshimanga, Alessandra Bertoldo, Manfredo Atzori ## Abstract The last decade has witnessed a notable surge in deep learning applications for the analysis of electroencephalography (EEG) data, thanks to its demonstrated superiority over conventional statistical...",
+    "key_topics": [
+      "more",
+      "better",
+      "Evaluating",
+      "role",
+      "preprocessing",
+      "deep"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"The more, the better? Evaluating the role of EEG preprocessing fo...\"?",
+      "What methodology or architecture is proposed in \"The more, the better? Evaluating the role of EEG preprocessing fo...\"?",
+      "What experimental results or limitations are discussed in \"The more, the better? Evaluating the role of EEG preprocessing fo...\"?"
+    ]
+  },
+  "2310.15194v2": {
+    "doc_id": "2310.15194v2",
+    "title": "How do the resting EEG preprocessing states affect the outcomes of postprocessing?",
+    "source_type": "arxiv",
+    "filename": "2310.15194v2.pdf",
+    "authors": "Shiang Hu, Jie Ruan, Juan Hou, Pedro Antonio Valdes-Sosa, Zhao Lv",
+    "citation_count": 0,
+    "chunk_count": 117,
+    "sections": [
+      "Abstract",
+      "Introduction",
+      "Experiments",
+      "Discussion",
+      "Conclusion"
+    ],
+    "created_at": "2026-10-18 12:47:42",
+    "char_count": 75879,
+    "summary": "# How do the resting EEG preprocessing states affect the outcomes of postprocessing? Authors: Shiang Hu, Jie Ruan, Juan Hou, Pedro Antonio Valdes-Sosa, Zhao Lv ## Abstract Plenty of artifact removal tools and pipelines have been developed to correct the EEG recordings and discover the values below the waveforms. Without visual inspection from the experts, it is susceptible to derive improper preprocessing states,...",
+    "key_topics": [
+      "resting",
+      "preprocessing",
+      "states",
+      "affect",
+      "outcomes",
+      "postprocessing"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"How do the resting EEG preprocessing states affect the outcomes o...\"?",
+      "What methodology or architecture is proposed in \"How do the resting EEG preprocessing states affect the outcomes o...\"?",
+      "What experimental results or limitations are discussed in \"How do the resting EEG preprocessing states affect the outcomes o...\"?"
+    ]
+  },
+  "2605.08184v1": {
+    "doc_id": "2605.08184v1",
+    "title": "Improving TMS EEG Signal Quality for Closed-Loop Neuro Stimulation via Source-Domain Denoising",
+    "source_type": "arxiv",
+    "filename": "2605.08184v1.pdf",
+    "authors": "Zhen Tang, Ameer Hamoodi, Stevie Foglia, Aimee Nelson, Zhen Gao",
+    "citation_count": 0,
+    "chunk_count": 34,
+    "sections": [
+      "Abstract",
+      "Introduction",
+      "Related Work",
+      "Experiments"
+    ],
+    "created_at": "2026-10-18 12:47:42",
+    "char_count": 23980,
+    "summary": "# Improving TMS EEG Signal Quality for Closed-Loop Neuro Stimulation via Source-Domain Denoising Authors: Zhen Tang, Ameer Hamoodi, Stevie Foglia, Aimee Nelson, Zhen Gao ## Abstract This research addresses a validated TMS EEG cleaning pipeline and a corresponding benchmark dataset. It evaluates two widely used artifact removal pipelines. A reference dataset of carefully preprocessed EEG signals was established to...",
+    "key_topics": [
+      "Improving",
+      "Signal",
+      "Quality",
+      "Closed-Loop",
+      "Neuro",
+      "Stimulation"
+    ],
+    "suggested_questions": [
+      "What are the core contributions and main findings of \"Improving TMS EEG Signal Quality for Closed-Loop Neuro Stimulatio...\"?",
+      "What methodology or architecture is proposed in \"Improving TMS EEG Signal Quality for Closed-Loop Neuro Stimulatio...\"?",
+      "What experimental results or limitations are discussed in \"Improving TMS EEG Signal Quality for Closed-Loop Neuro Stimulatio...\"?"
+    ]
   }
 }

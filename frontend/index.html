@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -878,6 +881,23 @@
       });
     }
 
+    function renderMath(el) {
+      if (!el || typeof window.renderMathInElement !== 'function') return;
+      try {
+        window.renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (e) {
+        console.debug('KaTeX render skipped:', e);
+      }
+    }
+
     function renderAnswer(markdownText, title = 'Response', followUps = []) {
       currentAnswerMarkdown = markdownText || '';
       currentAnswerTitle = title;
@@ -894,6 +914,7 @@
       }
 
       reportContentEl.innerHTML = `<div class="prose prose-invert max-w-none">${formatMarkdown(currentAnswerMarkdown)}</div>`;
+      renderMath(reportContentEl);
       renderFollowUpChips(followUps);
 
       // Bind NotebookLM-style Hover Citation Preview & Click-to-Source
@@ -906,7 +927,9 @@
           document.getElementById('cite-pop-badge').textContent = `[Source ${chunk.id}]`;
           document.getElementById('cite-pop-section').textContent = chunk.section || 'Passage';
           document.getElementById('cite-pop-title').textContent = chunk.title;
-          document.getElementById('cite-pop-snippet').textContent = chunk.text;
+          const popSnippetEl = document.getElementById('cite-pop-snippet');
+          popSnippetEl.textContent = chunk.text;
+          renderMath(popSnippetEl);
           hoverCard.classList.remove('hidden');
           const rect = pill.getBoundingClientRect();
           hoverCard.style.left = `${Math.min(window.innerWidth - 330, Math.max(12, rect.left - 40))}px`;
@@ -979,6 +1002,8 @@
           </div>
         `;
       }).join('');
+
+      renderMath(chunksGridEl);
 
       chunksGridEl.querySelectorAll('.chunk-expand-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1117,6 +1142,48 @@
       }
     }
 
+    async function loadConversationMessages(convId) {
+      if (!convId) return;
+      try {
+        const res = await fetch(`${API_BASE}/conversations/${encodeURIComponent(convId)}`);
+        if (!res.ok) return;
+        const conv = await res.json();
+        const msgs = conv.messages || [];
+        conversationHistory = msgs.map(m => ({ role: m.role, content: m.content }));
+        if (!msgs.length) return;
+
+        // Build full multi-turn transcript markdown and load latest sources
+        const transcriptBlocks = [];
+        let latestSources = [];
+        for (const m of msgs) {
+          if (m.role === 'user') {
+            transcriptBlocks.push(`### Q: ${m.content}`);
+          } else {
+            transcriptBlocks.push(m.content);
+            if (m.sources && m.sources.length) {
+              latestSources = m.sources;
+            }
+          }
+        }
+        if (latestSources.length) {
+          retrievedChunks = latestSources.map((src, idx) => ({
+            id: src.index || (idx + 1),
+            paperId: src.paper_id,
+            title: src.title,
+            section: src.section || '',
+            locationLabel: (src.metadata && src.metadata.location_label) || '',
+            score: src.score || 0,
+            text: src.snippet || '',
+            metadata: src.metadata || {}
+          }));
+          renderChunks();
+        }
+        renderAnswer(transcriptBlocks.join('\n\n---\n\n'), conv.title || 'Conversation Thread');
+      } catch (e) {
+        console.warn('Could not load conversation messages:', e);
+      }
+    }
+
     function populateConversations(conversations) {
       const listEl = document.getElementById('conversation-options-list');
       const labelEl = document.getElementById('conversation-trigger-label');
@@ -1129,7 +1196,8 @@
       }
 
       if (!conversations.some(c => c.id === activeConversationId)) {
-        activeConversationId = conversations[0].id;
+        const withMsgs = [...conversations].sort((a, b) => (b.message_count || 0) - (a.message_count || 0))[0];
+        activeConversationId = (withMsgs && withMsgs.message_count > 0) ? withMsgs.id : conversations[0].id;
       }
       const activeConv = conversations.find(c => c.id === activeConversationId) || conversations[0];
       labelEl.textContent = activeConv.title;
@@ -1157,6 +1225,8 @@
           populateConversations(conversations);
         });
       });
+
+      loadConversationMessages(activeConversationId);
     }
 
     async function loadIndexedDocuments() {
@@ -1284,7 +1354,10 @@
           });
         });
 
-        document.getElementById('inspector-doc-body').textContent = data.full_text || '';
+        const bodyEl = document.getElementById('inspector-doc-body');
+        bodyEl.textContent = data.full_text || '';
+        renderMath(document.getElementById('inspector-doc-summary'));
+        renderMath(bodyEl);
         const modal = document.getElementById('doc-inspector-modal');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -1527,6 +1600,7 @@
         query,
         narrow_keywords: document.getElementById('arxiv-narrow').value.trim() || null,
         max_papers: parseInt(document.getElementById('arxiv-max').value, 10) || 3,
+        download_pdf: true,
         workspace_id: activeWorkspaceId
       };
       try {

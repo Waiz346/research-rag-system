@@ -131,7 +131,14 @@ class ArxivCollector:
         query_parts = []
         clean_query = query.strip() if query else ""
         if clean_query:
-            query_parts.append(clean_query)
+            if any(op in clean_query for op in ("AND", "OR", "ti:", "abs:", "all:", '"')):
+                query_parts.append(clean_query)
+            else:
+                words = [w.strip() for w in clean_query.split() if len(w.strip()) >= 2]
+                if len(words) > 1:
+                    query_parts.append(" AND ".join(f"all:{w}" for w in words))
+                else:
+                    query_parts.append(clean_query)
 
         if title_keyword and title_keyword.strip():
             kw = title_keyword.strip()
@@ -144,7 +151,7 @@ class ArxivCollector:
             query_parts.append(f"abs:{escaped}")
 
         if not query_parts:
-            return "all:retrieval augmented generation"
+            return "all:retrieval AND all:augmented AND all:generation"
 
         return " AND ".join(query_parts)
 
@@ -457,7 +464,18 @@ class ArxivCollector:
         return results
 
     def _download_and_extract_pdf(self, paper_id: str, pdf_url: Optional[str] = None) -> Optional[str]:
-        """Download complete PDF from ArXiv and extract text across all major sections."""
+        """Download complete paper from ArXiv (preferring native LaTeX HTML, then formula-aware PDF extraction)."""
+        from src.ingestion.formula_parser import (
+            extract_arxiv_html_with_formulas,
+            extract_pdf_with_formulas,
+        )
+
+        # 1. Try native ArXiv HTML first (preserves 100% of LaTeX <math alttext="..."> formulas & headings)
+        html_text = extract_arxiv_html_with_formulas(paper_id)
+        if html_text and len(html_text.strip()) > 1500:
+            return html_text
+
+        # 2. Otherwise download the PDF and run formula-aware XObject + Symbol extraction
         clean_id = re.sub(r"v\d+$", "", paper_id.strip())
         pdf_path = self.download_dir / f"{clean_id}.pdf"
 
@@ -500,18 +518,6 @@ class ArxivCollector:
         return None
 
     def _extract_text_from_pdf(self, pdf_path: Path, max_pages: int = 30) -> str:
-        """Extract text from downloaded PDF file up to max_pages."""
-        try:
-            reader = PdfReader(str(pdf_path))
-            extracted_pages = []
-            for i, page in enumerate(reader.pages[:max_pages]):
-                try:
-                    text = page.extract_text()
-                    if text:
-                        extracted_pages.append(text)
-                except Exception:
-                    continue
-            return "\n\n".join(extracted_pages)
-        except Exception as e:
-            logger.warning(f"Error reading PDF {pdf_path}: {e}")
-            return ""
+        """Extract text and reconstructed LaTeX formulas from downloaded PDF file up to max_pages."""
+        from src.ingestion.formula_parser import extract_pdf_with_formulas
+        return extract_pdf_with_formulas(pdf_path, max_pages=max_pages)

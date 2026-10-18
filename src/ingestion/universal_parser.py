@@ -127,17 +127,19 @@ def parse_pdf_bytes(
     pdf_bytes: bytes,
     vision_ocr_fn: Optional[Callable[[bytes, str], str]] = None
 ) -> Tuple[str, int]:
-    """Extract text from PDF bytes preserving [Page N] markers for page-accurate citations."""
+    """Extract text and reconstructed LaTeX formulas from PDF bytes preserving [Page N] markers."""
+    from src.ingestion.formula_parser import extract_page_with_formulas
+
     reader = PdfReader(io.BytesIO(pdf_bytes))
     pages_output: List[str] = []
     total_pages = len(reader.pages)
 
     for idx, page in enumerate(reader.pages, start=1):
         try:
-            txt = (page.extract_text() or "").strip()
+            txt = extract_page_with_formulas(page, reader).strip()
         except Exception as e:
             logger.debug(f"Error extracting PDF page {idx}: {e}")
-            txt = ""
+            txt = (page.extract_text() or "").strip()
 
         if txt:
             pages_output.append(f"[Page {idx}]\n{txt}")
